@@ -58,7 +58,7 @@
     "lint:check": "biome check --write .",
     "lint:fix": "biome lint --write .",
     "preview": "vite preview",
-    "supabase:types:app": "npx supabase gen types typescript --project-id \"{projectId}\" > src/types/supabase.ts",
+    "supabase:types:app": "npx supabase gen types typescript --project-id \"jjrdjpcjzjdjlpmiodea\" > src/lib/supabase/supabase.ts",
     "test": "vitest run",
     "type-check": "tsc --noEmit"
   },

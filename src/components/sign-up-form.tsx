@@ -11,8 +11,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ROUTE_APP_HOME } from '@/constants'
+import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { supabase } from '@/supabase/client'
 
 export function SignUpForm({
   className,

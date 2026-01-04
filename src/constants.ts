@@ -28,8 +28,8 @@ export const CONTENT = {
 // Page Routes
 export const ROUTE_HOME = '/'
 export const ROUTE_APP_HOME = '/app'
-export const ROUTE_SIGNIN = '/signin'
-export const ROUTE_SIGNUP = '/signup'
+export const ROUTE_SIGNIN = '/login'
+export const ROUTE_SIGNUP = '/sign-up'
 
 // API Routes
 export const API_AUTH = '/api/auth.json'

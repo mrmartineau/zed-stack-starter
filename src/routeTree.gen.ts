@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
-import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PublicUpdatePasswordRouteImport } from './routes/_public/update-password'
 import { Route as PublicSignUpSuccessRouteImport } from './routes/_public/sign-up-success'
 import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
@@ -27,10 +27,10 @@ const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicIndexRoute = PublicIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PublicRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PublicUpdatePasswordRoute = PublicUpdatePasswordRouteImport.update({
   id: '/update-password',
@@ -64,25 +64,26 @@ const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/sign-up-success': typeof PublicSignUpSuccessRoute
   '/update-password': typeof PublicUpdatePasswordRoute
-  '/': typeof PublicIndexRoute
   '/app': typeof AuthedAppIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/login': typeof PublicLoginRoute
   '/sign-up': typeof PublicSignUpRoute
   '/sign-up-success': typeof PublicSignUpSuccessRoute
   '/update-password': typeof PublicUpdatePasswordRoute
-  '/': typeof PublicIndexRoute
   '/app': typeof AuthedAppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/_public/forgot-password': typeof PublicForgotPasswordRoute
@@ -90,30 +91,30 @@ export interface FileRoutesById {
   '/_public/sign-up': typeof PublicSignUpRoute
   '/_public/sign-up-success': typeof PublicSignUpSuccessRoute
   '/_public/update-password': typeof PublicUpdatePasswordRoute
-  '/_public/': typeof PublicIndexRoute
   '/_authed/app/': typeof AuthedAppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/forgot-password'
     | '/login'
     | '/sign-up'
     | '/sign-up-success'
     | '/update-password'
-    | '/'
     | '/app'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/forgot-password'
     | '/login'
     | '/sign-up'
     | '/sign-up-success'
     | '/update-password'
-    | '/'
     | '/app'
   id:
     | '__root__'
+    | '/'
     | '/_authed'
     | '/_public'
     | '/_public/forgot-password'
@@ -121,11 +122,11 @@ export interface FileRouteTypes {
     | '/_public/sign-up'
     | '/_public/sign-up-success'
     | '/_public/update-password'
-    | '/_public/'
     | '/_authed/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
 }
@@ -146,12 +147,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/': {
-      id: '/_public/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_public/update-password': {
       id: '/_public/update-password'
@@ -216,7 +217,6 @@ interface PublicRouteRouteChildren {
   PublicSignUpRoute: typeof PublicSignUpRoute
   PublicSignUpSuccessRoute: typeof PublicSignUpSuccessRoute
   PublicUpdatePasswordRoute: typeof PublicUpdatePasswordRoute
-  PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
@@ -225,7 +225,6 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicSignUpRoute: PublicSignUpRoute,
   PublicSignUpSuccessRoute: PublicSignUpSuccessRoute,
   PublicUpdatePasswordRoute: PublicUpdatePasswordRoute,
-  PublicIndexRoute: PublicIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
@@ -233,6 +232,7 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthedRouteRoute: AuthedRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
 }

@@ -5,9 +5,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { supabase } from '@/supabase/client'
-import type { UserProfile } from '@/types/db'
-import type { Database } from '@/types/supabase'
+import { supabase } from '@/lib/supabase/client'
+import type { UserProfile } from '@/lib/supabase/customTypes'
+import type { Database } from '@/lib/supabase/supabase'
 
 export const getSession = async () => {
   const {
@@ -15,18 +15,29 @@ export const getSession = async () => {
   } = await supabase.auth.getSession()
   return session
 }
+export const getSessionOptions = () => {
+  return queryOptions({
+    queryFn: () => getSession(),
+    queryKey: ['session'],
+    staleTime: 5 * 1000,
+  })
+}
 
 export const getUserProfile = async () => {
   const {
     data: { user },
   } = await supabase.auth.getUser()
   const userProfile = await supabase
-    .from('profiles')
+    .from('users')
     .select('*')
     .match({ id: user?.id })
     .single()
 
-  return userProfile
+  if (userProfile?.error) {
+    throw userProfile.error
+  }
+
+  return userProfile.data
 }
 
 export const getUserProfileOptions = () => {
@@ -42,7 +53,7 @@ export const getUserProfileByApiKey = async (
   supabaseClient: SupabaseClient<Database> = supabase
 ) => {
   const supabaseResponse = await supabaseClient
-    .from('profiles')
+    .from('users')
     .select('*')
     .match({ api_key: apiKey })
     .single()
@@ -62,7 +73,7 @@ interface UpdateUserParams {
 
 const updateUser = async ({ column, value, id }: UpdateUserParams) => {
   return await supabase
-    .from('profiles')
+    .from('users')
     .update({ [column]: value, updated_at: new Date().toISOString() })
     .match({ id })
 }

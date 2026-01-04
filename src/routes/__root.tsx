@@ -10,7 +10,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 interface MyRouterContext {
-  session: Session | null
+  session: Session | null | undefined
   queryClient: QueryClient
 }
 export const Route = createRootRouteWithContext<MyRouterContext>()({

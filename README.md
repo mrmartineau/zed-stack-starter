@@ -1,295 +1,227 @@
-# TypeScript + React + Supabase + TanStack Router + Cloudflare Workers
+# React Supabase Starter
+
+A modern, full-stack React starter template featuring Supabase authentication, TanStack Router, and Cloudflare Workers deployment.
+
+## Tech Stack
+
+| Category                 | Technology                                            |
+| ------------------------ | ----------------------------------------------------- |
+| **Framework**            | [React 19](https://react.dev/)                        |
+| **Routing**              | [TanStack Router](https://tanstack.com/router)        |
+| **Data Fetching**        | [TanStack Query](https://tanstack.com/query)          |
+| **Auth & Database**      | [Supabase](https://supabase.com/)                     |
+| **API Server**           | [Hono](https://hono.dev/)                             |
+| **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/) |
+| **Styling**              | [Tailwind CSS v4](https://tailwindcss.com/)           |
+| **UI Components**        | [shadcn/ui](https://ui.shadcn.com/)                   |
+| **Validation**           | [Zod](https://zod.dev/)                               |
+| **Linting & Formatting** | [Biome](https://biomejs.dev/)                         |
+| **Testing**              | [Vitest](https://vitest.dev/)                         |
+
+## Prerequisites
+
+- [Bun](https://bun.sh/) (recommended) or Node.js 20+
+- A [Supabase](https://supabase.com/) project
+- A [Cloudflare](https://cloudflare.com/) account (for deployment)
 
 ## Getting Started
 
-To run this application:
+### 1. Install Dependencies
 
 ```bash
 bun install
-bun --bun run start
 ```
 
-## Building For Production
+### 2. Environment Variables
 
-To build this application for production:
+Create a `.env` file in the root of the project with your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-publishable-key
+```
+
+### 3. Start Development Server
 
 ```bash
-bun --bun run build
+bun run dev
 ```
 
-## Testing
+The app will be available at [http://localhost:3450](http://localhost:3450).
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+## Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── ui/              # shadcn/ui components
+│   ├── AuthProvider.tsx # Authentication context
+│   ├── login-form.tsx   # Login form component
+│   └── ...
+├── lib/                 # Shared libraries and utilities
+│   ├── fetching/        # Data fetching utilities
+│   │   └── user.ts      # User/session fetching
+│   ├── supabase/        # Supabase client configuration
+│   │   ├── client.ts    # Browser Supabase client
+│   │   ├── customTypes.ts
+│   │   └── supabase.ts  # Supabase types
+│   └── utils.ts         # General utility functions
+├── routes/              # TanStack Router file-based routes
+│   ├── __root.tsx       # Root layout
+│   ├── _authed/         # Protected routes (require auth)
+│   │   └── app/         # Main application routes
+│   ├── _public/         # Public, non-authed routes (login, signup, etc.)
+│   └── index.tsx        # Home page
+├── worker/              # Cloudflare Worker / Hono API
+│   ├── hono.ts          # API routes
+│   ├── index.ts         # Worker entry point
+│   └── supabase/        # Server-side Supabase client
+│       └── client.ts
+├── constants.ts         # App constants and route definitions
+├── main.tsx             # Application entry point
+└── styles.css           # Global styles
+```
+
+## Authentication
+
+This starter includes a complete authentication flow powered by Supabase:
+
+- **Login** — Email/password authentication
+- **Sign Up** — New user registration (can be disabled via `ALLOW_SIGNUP` constant)
+- **Forgot Password** — Password reset flow
+- **Update Password** — Password update for logged-in users
+- **Protected Routes** — Routes under `/_authed` require authentication
+
+The authentication state is managed through a React context (`AuthProvider`) and integrated with TanStack Query for caching.
+
+## API Routes
+
+API routes are handled by [Hono](https://hono.dev/) running on Cloudflare Workers. Routes are defined in `src/worker/hono.ts`:
+
+```typescript
+// All routes are prefixed with /api
+app.get('/', (c) => c.text('API'))
+app.get('debug', (c) => c.json({ message: 'Hello, world!' }))
+```
+
+The Hono server includes:
+
+- Automatic 404 handling
+- Error handling with logging
+- Easy route definition
+
+## Building for Production
 
 ```bash
-bun --bun run test
+bun run build
 ```
+
+This runs Vite's production build followed by TypeScript compilation.
+
+## Deployment
+
+This project is configured for deployment to Cloudflare Workers.
+
+### Deploy to Cloudflare
+
+```bash
+bun run deploy
+```
+
+This builds the project and deploys it using Wrangler. Make sure you're authenticated with Cloudflare:
+
+```bash
+bunx wrangler login
+```
+
+### Cloudflare Configuration
+
+The Worker configuration is in `wrangler.jsonc`:
+
+- **Smart Placement** — Automatically runs your Worker close to your backend services
+- **AI Binding** — Cloudflare AI is available via the `AI` binding
+- **SPA Routing** — Configured for single-page application routing
 
 ## Styling
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+This project uses [Tailwind CSS v4](https://tailwindcss.com/) for styling. Global styles are in `src/styles.css`.
 
-## Shadcn
+### Adding shadcn/ui Components
 
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-bunx --bun shadcn@latest add button
-```
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from '@tanstack/react-router'
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/people',
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json() as Promise<{
-      results: {
-        name: string
-      }[]
-    }>
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData()
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    )
-  },
-})
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
+Use the latest version of shadcn to add new components:
 
 ```bash
-bun install @tanstack/react-query @tanstack/react-query-devtools
+bunx shadcn@latest add button
+bunx shadcn@latest add card
+bunx shadcn@latest add input
 ```
 
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
+Available components are configured in `components.json`.
 
-```tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+## Testing
 
-// ...
-
-const queryClient = new QueryClient()
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  )
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from '@tanstack/react-query'
-
-import './App.css'
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ['people'],
-    queryFn: () =>
-      fetch('https://swapi.dev/api/people')
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  })
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-export default App
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
+Tests are written with [Vitest](https://vitest.dev/) and [Testing Library](https://testing-library.com/).
 
 ```bash
-bun install @tanstack/store
+# Run tests once
+bun run test
+
+# Run tests in watch mode
+bunx vitest
 ```
 
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
+## Linting & Formatting
 
-```tsx
-import { useStore } from '@tanstack/react-store'
-import { Store } from '@tanstack/store'
-import './App.css'
+This project uses [Biome](https://biomejs.dev/) for linting and formatting.
 
-const countStore = new Store(0)
+```bash
+# Format code
+bun run format
 
-function App() {
-  const count = useStore(countStore)
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  )
-}
+# Lint code
+bun run lint
 
-export default App
+# Check and fix all issues
+bun run lint:check
 ```
 
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
+## Available Scripts
 
-Let's check this out by doubling the count using derived state.
+| Script                       | Description                            |
+| ---------------------------- | -------------------------------------- |
+| `bun run dev`                | Start development server on port 3450  |
+| `bun run build`              | Build for production                   |
+| `bun run preview`            | Preview production build locally       |
+| `bun run deploy`             | Build and deploy to Cloudflare Workers |
+| `bun run test`               | Run tests                              |
+| `bun run format`             | Format code with Biome                 |
+| `bun run lint`               | Lint code with Biome                   |
+| `bun run lint:check`         | Check and fix linting issues           |
+| `bun run lint:fix`           | Fix linting issues                     |
+| `bun run type-check`         | Run TypeScript type checking           |
+| `bun run cf-typegen`         | Generate Cloudflare Worker types       |
+| `bun run supabase:types:app` | Generate Supabase database types       |
 
-```tsx
-import { useStore } from '@tanstack/react-store'
-import { Store, Derived } from '@tanstack/store'
-import './App.css'
+## Generating Types
 
-const countStore = new Store(0)
+### Supabase Database Types
 
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-})
-doubledStore.mount()
+Generate TypeScript types from your Supabase database schema:
 
-function App() {
-  const count = useStore(countStore)
-  const doubledCount = useStore(doubledStore)
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  )
-}
-
-export default App
+```bash
+bun run supabase:types:app
 ```
 
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
+This outputs types to `src/types/supabase.ts`.
 
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
+### Cloudflare Worker Types
 
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+Generate types for Cloudflare bindings:
 
-# Demo files
+```bash
+bun run cf-typegen
+```
 
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+## License
 
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+MIT

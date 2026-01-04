@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { supabase } from '@/supabase/client'
 
 export function ForgotPasswordForm({
   className,

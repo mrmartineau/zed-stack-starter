@@ -41,7 +41,21 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-publishable-key
 ```
 
-### 3. Start Development Server
+### 3. Database Setup
+
+Run the initial database migration in your Supabase project. Go to your [Supabase Dashboard](https://supabase.com/dashboard) → SQL Editor, and execute the contents of:
+
+```
+src/migrations/001_initial_schema.sql
+```
+
+This migration:
+
+- Creates the `users` table with `id`, `email`, `name`, and timestamps
+- Sets up a trigger that automatically creates a user record when someone signs up via Supabase Auth
+- Extracts the user's name from auth metadata (falls back to email prefix)
+
+### 4. Start Development Server
 
 ```bash
 bun run dev

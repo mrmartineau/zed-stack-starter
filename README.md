@@ -1,4 +1,4 @@
-# Z Stack Starter
+# Zed Stack Starter
 
 Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed to Cloudflare Workers.
 

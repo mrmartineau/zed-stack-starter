@@ -42,7 +42,7 @@
     "web-vitals": "^5.1.0",
     "wrangler": "^4.54.0"
   },
-  "name": "react-app-starter",
+  "name": "zed-stack-starter",
   "private": true,
   "scripts": {
     "build": "vite build && tsc",

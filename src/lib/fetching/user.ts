@@ -1,5 +1,4 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { authClient } from "@/lib/auth/client";
 import type { UserProfile } from "@/types/db";
 
@@ -76,7 +75,7 @@ export const updateUserMutation = () => {
       if (error) throw error;
     },
     onError: (error, _, context) => {
-      toast.error(error.message);
+      console.error(error.message);
       // @ts-expect-error returned in onMutate
       queryClient.setQueryData(["userProfile"], context?.previousProfile);
     },
@@ -99,7 +98,6 @@ export const updateUserMutation = () => {
       return { previousProfile };
     },
     onSettled: async () => {
-      toast.success("User settings updated successfully");
       await queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },
   });

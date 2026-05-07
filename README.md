@@ -52,7 +52,7 @@ Copy `.env.example` → `.env` and fill in:
 ```env
 DATABASE_URL=postgresql://...        # from step 2
 BETTER_AUTH_SECRET=                  # see below
-BETTER_AUTH_URL=http://localhost:3450
+BETTER_AUTH_URL=http://ras.localhost:1355
 ```
 
 Generate a secret:
@@ -75,7 +75,7 @@ This applies the SQL files in `drizzle/` to your database. Tables created: `user
 bun run dev
 ```
 
-App runs at http://localhost:3450.
+App runs at http://ras.localhost:1355.
 
 ## Project Structure
 

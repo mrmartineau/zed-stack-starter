@@ -10,7 +10,6 @@ import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuthContext } from "./components/AuthProvider";
-import { Toaster } from "./components/ui/sonner";
 import reportWebVitals from "./reportWebVitals.ts";
 
 export const queryClient = new QueryClient({
@@ -46,7 +45,6 @@ const App = () => {
   return (
     <NuqsAdapter>
       <RouterProvider router={router} context={{ queryClient, session: authSession }} />
-      <Toaster />
     </NuqsAdapter>
   );
 };

@@ -1,4 +1,5 @@
 import { SignOutIcon } from "@phosphor-icons/react";
+import { Button } from "@mrmartineau/zui/react";
 import { useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth/client";
 import { CONTENT, ROUTE_SIGNIN } from "../constants";
@@ -12,9 +13,9 @@ export default function LogoutButton() {
   };
 
   return (
-    <button className="flex items-center gap-3" type="submit" onClick={handleLogout}>
+    <Button variant="ghost" onClick={handleLogout}>
       <SignOutIcon aria-label="Sign out" size={18} weight="duotone" />
       {CONTENT.signOutNav}
-    </button>
+    </Button>
   );
 }

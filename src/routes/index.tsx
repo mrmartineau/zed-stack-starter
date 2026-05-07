@@ -11,7 +11,7 @@ function App() {
 
   return (
     <div>
-      <header className="p-4 flex gap-2 items-center justify-center">
+      <header className="flex items-center justify-center gap-xs p-md">
         <p>
           Edit <code>src/routes/index.tsx</code> and save to reload.
         </p>

@@ -9,11 +9,6 @@
     },
     "enabled": true
   },
-  "css": {
-    "parser": {
-      "tailwindDirectives": true
-    }
-  },
   "files": {
     "ignoreUnknown": false,
     "includes": ["**", "!**/dist", "!src/routeTree.gen.ts", "!src/types/supabase.ts"]

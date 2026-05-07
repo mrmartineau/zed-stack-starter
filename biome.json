@@ -16,12 +16,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!**/dist",
-      "!src/routeTree.gen.ts",
-      "!src/types/supabase.ts"
-    ]
+    "includes": ["**", "!**/dist", "!src/routeTree.gen.ts", "!src/types/supabase.ts"]
   },
   "formatter": {
     "enabled": true,

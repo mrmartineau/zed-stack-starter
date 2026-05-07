@@ -20,7 +20,7 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/worker/index.ts",
-  "name": "react-supabase-starter",
+  "name": "z-stack-starter",
   "observability": {
     "enabled": true
   },
@@ -29,7 +29,11 @@
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
    */
-  "placement": { "mode": "smart" }
+  "placement": { "mode": "smart" },
+  "vars": {
+    /** Public base URL for better-auth. Set per-environment. */
+    "BETTER_AUTH_URL": "http://localhost:3450"
+  }
   /**
    * Environment Variables
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables

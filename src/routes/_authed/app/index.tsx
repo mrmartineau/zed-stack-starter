@@ -1,30 +1,27 @@
-import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
-import { getUserProfileOptions } from '@/lib/fetching/user'
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { getUserProfileOptions } from "@/lib/fetching/user";
 
-export const Route = createFileRoute('/_authed/app/')({
+export const Route = createFileRoute("/_authed/app/")({
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  // Test query using debug endpoint
   const { data: debug } = useQuery({
     queryFn: async () => {
-      const res = await fetch('/api/debug')
-      if (!res.ok) {
-        throw new Error('Failed to fetch debug info')
-      }
-      return await res.json()
+      const res = await fetch("/api");
+      if (!res.ok) throw new Error("Failed to fetch debug info");
+      return (await res.text()) as string;
     },
-    queryKey: ['debug'],
-  })
+    queryKey: ["debug"],
+  });
 
-  const { data: user } = useQuery(getUserProfileOptions())
+  const { data: user } = useQuery(getUserProfileOptions());
 
   return (
     <>
-      <p>Hello {user?.email}</p>
-      <p>Debug: {debug?.message}</p>
+      <p>Hello {user?.data?.username}</p>
+      <p>Debug: {debug}</p>
     </>
-  )
+  );
 }

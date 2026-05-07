@@ -1,13 +1,13 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSession } from '@/components/AuthProvider'
-import { ROUTE_APP_HOME, ROUTE_SIGNIN, ROUTE_SIGNUP } from '@/constants'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSession } from "@/components/AuthProvider";
+import { ROUTE_APP_HOME, ROUTE_SIGNIN, ROUTE_SIGNUP } from "@/constants";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: App,
-})
+});
 
 function App() {
-  const session = useSession()
+  const session = useSession();
 
   return (
     <div>
@@ -25,5 +25,5 @@ function App() {
         )}
       </header>
     </div>
-  )
+  );
 }

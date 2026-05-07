@@ -1,6 +1,6 @@
-import { API_HEADERS } from '@/constants'
+import { API_HEADERS } from "@/constants";
 
-type Params = { reason: string; error?: string; status: number }
+type Params = { reason: string; error?: string; status: number };
 export const errorResponse = ({ reason, error, status }: Params) => {
   return new Response(
     JSON.stringify({
@@ -11,6 +11,6 @@ export const errorResponse = ({ reason, error, status }: Params) => {
     {
       headers: API_HEADERS,
       status,
-    }
-  )
-}
+    },
+  );
+};

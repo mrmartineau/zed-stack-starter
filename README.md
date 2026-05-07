@@ -1,240 +1,253 @@
-# React Supabase Starter
+# Z Stack Starter
 
-A modern, full-stack React starter template featuring Supabase authentication, TanStack Router, and Cloudflare Workers deployment.
+Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed to Cloudflare Workers.
 
 ## Tech Stack
 
-| Category                 | Technology                                            |
-| ------------------------ | ----------------------------------------------------- |
-| **Framework**            | [React 19](https://react.dev/)                        |
-| **Routing**              | [TanStack Router](https://tanstack.com/router)        |
-| **Data Fetching**        | [TanStack Query](https://tanstack.com/query)          |
-| **Auth & Database**      | [Supabase](https://supabase.com/)                     |
-| **API Server**           | [Hono](https://hono.dev/)                             |
-| **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/) |
-| **Styling**              | [Tailwind CSS v4](https://tailwindcss.com/)           |
-| **UI Components**        | [shadcn/ui](https://ui.shadcn.com/)                   |
-| **Validation**           | [Zod](https://zod.dev/)                               |
-| **Linting & Formatting** | [Biome](https://biomejs.dev/)                         |
-| **Testing**              | [Vitest](https://vitest.dev/)                         |
+| Category                 | Technology                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| **Framework**            | [React 19](https://react.dev/)                                                         |
+| **Routing**              | [TanStack Router](https://tanstack.com/router)                                         |
+| **Data Fetching**        | [TanStack Query](https://tanstack.com/query)                                           |
+| **Auth**                 | [better-auth](https://www.better-auth.com/)                                            |
+| **Database**             | Any Postgres (default: [Neon](https://neon.tech/))                                     |
+| **ORM**                  | [Drizzle ORM](https://orm.drizzle.team/)                                               |
+| **DB Driver**            | [@neondatabase/serverless](https://neon.tech/docs/serverless/serverless-driver) (HTTP) |
+| **API Server**           | [Hono](https://hono.dev/)                                                              |
+| **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/)                                  |
+| **Styling**              | [Tailwind CSS v4](https://tailwindcss.com/)                                            |
+| **UI Components**        | [shadcn/ui](https://ui.shadcn.com/)                                                    |
+| **Validation**           | [Zod](https://zod.dev/)                                                                |
+| **Linting & Formatting** | [Biome](https://biomejs.dev/)                                                          |
+| **Testing**              | [Vitest](https://vitest.dev/)                                                          |
 
 ## Prerequisites
 
 - [Bun](https://bun.sh/) (recommended) or Node.js 20+
-- A [Supabase](https://supabase.com/) project
+- A Postgres database — [Neon](https://neon.tech/) recommended (free tier works)
 - A [Cloudflare](https://cloudflare.com/) account (for deployment)
 
-## Getting Started
+## Quick Start
 
-### 1. Install Dependencies
+### 1. Install
 
 ```bash
 bun install
 ```
 
-### 2. Environment Variables
+### 2. Provision Postgres
 
-Create a `.env` file in the root of the project with your Supabase credentials:
+Sign up at [Neon](https://console.neon.tech/), create a project, and copy the **pooled** connection string. It looks like:
+
+```
+postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/DBNAME?sslmode=require
+```
+
+> Any Postgres works — Supabase, RDS, Railway, local Docker, etc. Just pass a valid connection string.
+
+### 3. Environment
+
+Copy `.env.example` → `.env` and fill in:
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-publishable-key
+DATABASE_URL=postgresql://...        # from step 2
+BETTER_AUTH_SECRET=                  # see below
+BETTER_AUTH_URL=http://localhost:3450
 ```
 
-### 3. Database Setup
+Generate a secret:
 
-Run the initial database migration in your Supabase project. Go to your [Supabase Dashboard](https://supabase.com/dashboard) → SQL Editor, and execute the contents of:
-
-```
-src/migrations/001_initial_schema.sql
+```bash
+openssl rand -hex 32
 ```
 
-This migration:
+### 4. Run migrations
 
-- Creates the `users` table with `id`, `email`, `name`, and timestamps
-- Sets up a trigger that automatically creates a user record when someone signs up via Supabase Auth
-- Extracts the user's name from auth metadata (falls back to email prefix)
+```bash
+bun run db:migrate
+```
 
-### 4. Start Development Server
+This applies the SQL files in `drizzle/` to your database. Tables created: `user`, `session`, `account`, `verification`, `jwks`, `profiles`.
+
+### 5. Start dev server
 
 ```bash
 bun run dev
 ```
 
-The app will be available at [http://localhost:3450](http://localhost:3450).
+App runs at http://localhost:3450.
 
 ## Project Structure
 
 ```
+db/                     # Drizzle schema + client
+├── schema.ts           # Auth tables + profiles
+└── client.ts           # neon-http drizzle client
+drizzle/                # Generated migration SQL
+drizzle.config.ts       # Drizzle Kit config
 src/
-├── components/          # React components
-│   ├── ui/              # shadcn/ui components
-│   ├── AuthProvider.tsx # Authentication context
-│   ├── login-form.tsx   # Login form component
-│   └── ...
-├── lib/                 # Shared libraries and utilities
-│   ├── fetching/        # Data fetching utilities
-│   │   └── user.ts      # User/session fetching
-│   ├── supabase/        # Supabase client configuration
-│   │   ├── client.ts    # Browser Supabase client
-│   │   ├── customTypes.ts
-│   │   └── supabase.ts  # Supabase types
-│   └── utils.ts         # General utility functions
-├── routes/              # TanStack Router file-based routes
-│   ├── __root.tsx       # Root layout
-│   ├── _authed/         # Protected routes (require auth)
-│   │   └── app/         # Main application routes
-│   ├── _public/         # Public, non-authed routes (login, signup, etc.)
-│   └── index.tsx        # Home page
-├── worker/              # Cloudflare Worker / Hono API
-│   ├── hono.ts          # API routes
-│   ├── index.ts         # Worker entry point
-│   └── supabase/        # Server-side Supabase client
-│       └── client.ts
-├── constants.ts         # App constants and route definitions
-├── main.tsx             # Application entry point
-└── styles.css           # Global styles
+├── components/
+│   ├── ui/             # shadcn components
+│   ├── AuthProvider.tsx
+│   ├── login-form.tsx
+│   ├── sign-up-form.tsx
+│   ├── forgot-password-form.tsx
+│   ├── update-password-form.tsx
+│   └── LogoutButton.tsx
+├── lib/
+│   ├── auth/
+│   │   ├── server.ts   # better-auth server config
+│   │   └── client.ts   # better-auth React client
+│   ├── fetching/
+│   │   ├── user.ts     # session + profile queries
+│   │   └── errorResponse.ts
+│   ├── get-error-message.ts
+│   └── utils.ts
+├── routes/             # TanStack Router file-based
+│   ├── __root.tsx
+│   ├── _authed/        # protected
+│   ├── _public/        # login / signup / forgot-password
+│   └── index.tsx
+├── worker/             # Hono on Cloudflare Workers
+│   ├── index.ts        # entry
+│   ├── hono.ts         # routes
+│   ├── env.ts          # typed env bindings
+│   ├── context.ts      # request context (session + DB)
+│   └── profile.ts      # /api/me endpoints
+├── types/db.ts
+├── constants.ts
+├── main.tsx
+└── styles.css
 ```
 
-## Authentication
+## Auth Flow
 
-This starter includes a complete authentication flow powered by Supabase:
+Email/password via [better-auth](https://www.better-auth.com/):
 
-- **Login** — Email/password authentication
-- **Sign Up** — New user registration (can be disabled via `ALLOW_SIGNUP` constant)
-- **Forgot Password** — Password reset flow
-- **Update Password** — Password update for logged-in users
-- **Protected Routes** — Routes under `/_authed` require authentication
+- **Sign up** — `authClient.signUp.email({email, password, name})`
+- **Sign in** — `authClient.signIn.email({email, password})`
+- **Sign out** — `authClient.signOut()`
+- **Session** — `authClient.useSession()` (live React hook)
+- **Forgot password** — POST `/api/auth/forget-password` (server needs `sendResetPassword` configured to actually send mail; see `src/lib/auth/server.ts`)
 
-The authentication state is managed through a React context (`AuthProvider`) and integrated with TanStack Query for caching.
+A `profiles` row is auto-inserted via `databaseHooks.user.create.after` on sign up.
 
-## API Routes
+### Protected routes
 
-API routes are handled by [Hono](https://hono.dev/) running on Cloudflare Workers. Routes are defined in `src/worker/hono.ts`:
+`src/routes/_authed/route.tsx` calls `getSession()` in `beforeLoad` and redirects to `/login` if missing.
 
-```typescript
-// All routes are prefixed with /api
-app.get('/', (c) => c.text('API'))
-app.get('debug', (c) => c.json({ message: 'Hello, world!' }))
+### Server-side auth
+
+`src/worker/context.ts` exposes:
+
+- `createRequestContext(c)` — pulls session from request headers, returns `{db, user, profile}`
+- `requireRequestContext(c)` — same, returns 401 Response if no auth
+
+Supports both cookie sessions and `Authorization: Bearer <api_key>` (where `api_key` is the UUID stored in `profiles.api_key`).
+
+## API
+
+Hono mounted at `/api`. Defined in `src/worker/hono.ts`:
+
+```ts
+app.on(['GET', 'POST'], '/auth/*', ...)  // better-auth handler
+app.get('/me', getCurrentProfile)
+app.patch('/me', updateCurrentProfile)
 ```
 
-The Hono server includes:
+Add new routes in `hono.ts`. Use `requireRequestContext(c)` inside handlers needing auth.
 
-- Automatic 404 handling
-- Error handling with logging
-- Easy route definition
+## Database
 
-## Building for Production
+Drizzle ORM with Neon HTTP driver — designed for Workers' edge runtime.
 
-```bash
-bun run build
+### Editing schema
+
+1. Edit `db/schema.ts`
+2. `bun run db:generate` → emits SQL in `drizzle/`
+3. Commit the SQL
+4. `bun run db:migrate` → applies to your DB
+
+### Querying
+
+```ts
+import { eq } from "drizzle-orm";
+import { createDb } from "../../db/client";
+import { profiles } from "../../db/schema";
+
+const db = createDb(env);
+const [profile] = await db.select().from(profiles).where(eq(profiles.id, userId));
 ```
 
-This runs Vite's production build followed by TypeScript compilation.
+### Switching databases
+
+The `@neondatabase/serverless` driver speaks Postgres wire protocol over HTTP. To switch off Neon:
+
+- **Self-hosted / RDS / Supabase**: swap `db/client.ts` to `drizzle-orm/node-postgres` + `pg.Pool` (requires `nodejs_compat` flag — already set in `wrangler.jsonc`).
+- **Cloudflare Hyperdrive**: bind a Hyperdrive in `wrangler.jsonc`, read its `connectionString`.
 
 ## Deployment
 
-This project is configured for deployment to Cloudflare Workers.
+### Set secrets
 
-### Deploy to Cloudflare
+```bash
+bunx wrangler secret put DATABASE_URL
+bunx wrangler secret put BETTER_AUTH_SECRET
+```
+
+Update `BETTER_AUTH_URL` in `wrangler.jsonc` `vars` to your production URL.
+
+### Deploy
 
 ```bash
 bun run deploy
 ```
 
-This builds the project and deploys it using Wrangler. Make sure you're authenticated with Cloudflare:
+Authenticate first if needed: `bunx wrangler login`.
+
+### Wrangler config
+
+`wrangler.jsonc`:
+
+- `nodejs_compat` flag — required for bcryptjs + better-auth internals
+- `assets.not_found_handling: "single-page-application"` — SPA fallback
+- `placement.mode: "smart"` — Worker runs near your DB
+- `ai.binding: "AI"` — Workers AI available as `env.AI`
+
+## Scripts
+
+| Script                | What it does                            |
+| --------------------- | --------------------------------------- |
+| `bun run dev`         | Start dev server on port 3450           |
+| `bun run build`       | Vite build + tsc                        |
+| `bun run preview`     | Preview production build                |
+| `bun run deploy`      | Build + `wrangler deploy`               |
+| `bun run db:generate` | Generate Drizzle migrations from schema |
+| `bun run db:migrate`  | Apply migrations to DATABASE_URL        |
+| `bun run db:studio`   | Open Drizzle Studio                     |
+| `bun run test`        | Run Vitest                              |
+| `bun run type-check`  | TypeScript check                        |
+| `bun run cf-typegen`  | Regenerate `worker-configuration.d.ts`  |
+| `bun run lint:check`  | Biome check + autofix                   |
+| `bun run format`      | Biome format                            |
+
+## Adding shadcn components
 
 ```bash
-bunx wrangler login
+bunx shadcn@latest add button card input
 ```
 
-### Cloudflare Configuration
+Configured in `components.json`.
 
-The Worker configuration is in `wrangler.jsonc`:
+## Configuration knobs
 
-- **Smart Placement** — Automatically runs your Worker close to your backend services
-- **AI Binding** — Cloudflare AI is available via the `AI` binding
-- **SPA Routing** — Configured for single-page application routing
-
-## Styling
-
-This project uses [Tailwind CSS v4](https://tailwindcss.com/) for styling. Global styles are in `src/styles.css`.
-
-### Adding shadcn/ui Components
-
-Use the latest version of shadcn to add new components:
-
-```bash
-bunx shadcn@latest add button
-bunx shadcn@latest add card
-bunx shadcn@latest add input
-```
-
-Available components are configured in `components.json`.
-
-## Testing
-
-Tests are written with [Vitest](https://vitest.dev/) and [Testing Library](https://testing-library.com/).
-
-```bash
-# Run tests once
-bun run test
-
-# Run tests in watch mode
-bunx vitest
-```
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting.
-
-```bash
-# Format code
-bun run format
-
-# Lint code
-bun run lint
-
-# Check and fix all issues
-bun run lint:check
-```
-
-## Available Scripts
-
-| Script                       | Description                            |
-| ---------------------------- | -------------------------------------- |
-| `bun run dev`                | Start development server on port 3450  |
-| `bun run build`              | Build for production                   |
-| `bun run preview`            | Preview production build locally       |
-| `bun run deploy`             | Build and deploy to Cloudflare Workers |
-| `bun run test`               | Run tests                              |
-| `bun run format`             | Format code with Biome                 |
-| `bun run lint`               | Lint code with Biome                   |
-| `bun run lint:check`         | Check and fix linting issues           |
-| `bun run lint:fix`           | Fix linting issues                     |
-| `bun run type-check`         | Run TypeScript type checking           |
-| `bun run cf-typegen`         | Generate Cloudflare Worker types       |
-| `bun run supabase:types:app` | Generate Supabase database types       |
-
-## Generating Types
-
-### Supabase Database Types
-
-Generate TypeScript types from your Supabase database schema:
-
-```bash
-bun run supabase:types:app
-```
-
-This outputs types to `src/types/supabase.ts`.
-
-### Cloudflare Worker Types
-
-Generate types for Cloudflare bindings:
-
-```bash
-bun run cf-typegen
-```
+| Env var                       | Purpose                                        |
+| ----------------------------- | ---------------------------------------------- |
+| `DATABASE_URL`                | Postgres connection string                     |
+| `BETTER_AUTH_SECRET`          | 32+ char random hex; signs sessions            |
+| `BETTER_AUTH_URL`             | Public origin (cookies + redirect URLs)        |
+| `BETTER_AUTH_TRUSTED_ORIGINS` | Comma-separated. Defaults to `BETTER_AUTH_URL` |
+| `BETTER_AUTH_DISABLE_SIGNUP`  | `true` to lock out new sign-ups                |
 
 ## License
 

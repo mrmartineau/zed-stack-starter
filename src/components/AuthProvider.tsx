@@ -1,35 +1,29 @@
-import type { Session } from '@supabase/supabase-js'
-import { useQuery } from '@tanstack/react-query'
-import { createContext, useContext } from 'react'
-import { getSessionOptions } from '@/lib/fetching/user'
+import { createContext, useContext } from "react";
+import { type AuthSession, authClient } from "@/lib/auth/client";
 
 const SessionContext = createContext<{
-  session: Session | null | undefined
+  session: AuthSession | null;
 }>({
   session: null,
-})
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const session = useSession()
+  const session = useSession();
 
-  return (
-    <SessionContext.Provider value={{ session }}>
-      {children}
-    </SessionContext.Provider>
-  )
-}
+  return <SessionContext.Provider value={{ session }}>{children}</SessionContext.Provider>;
+};
 
 export const useAuthContext = () => {
-  const context = useContext(SessionContext)
+  const context = useContext(SessionContext);
 
   if (context === undefined) {
-    throw new Error('useAuthContext has to be used within <AuthProvider>')
+    throw new Error("useAuthContext has to be used within <AuthProvider>");
   }
 
-  return context
-}
+  return context;
+};
 
 export const useSession = () => {
-  const { data: session } = useQuery(getSessionOptions())
-  return session
-}
+  const { data: session } = authClient.useSession();
+  return session;
+};

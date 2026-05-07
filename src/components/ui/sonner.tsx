@@ -4,15 +4,15 @@ import {
   SpinnerIcon,
   WarningIcon,
   XCircleIcon,
-} from '@phosphor-icons/react'
-import { Toaster as Sonner, type ToasterProps } from 'sonner'
+} from "@phosphor-icons/react";
+import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-const theme = 'system'
+const theme = "system";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
+      theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
         error: <XCircleIcon className="size-4" />,
@@ -23,20 +23,20 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       style={
         {
-          '--border-radius': 'var(--radius)',
-          '--normal-bg': 'var(--popover)',
-          '--normal-border': 'var(--border)',
-          '--normal-text': 'var(--popover-foreground)',
+          "--border-radius": "var(--radius)",
+          "--normal-bg": "var(--popover)",
+          "--normal-border": "var(--border)",
+          "--normal-text": "var(--popover-foreground)",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
-          toast: 'cn-toast',
+          toast: "cn-toast",
         },
       }}
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Toaster }
+export { Toaster };

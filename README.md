@@ -15,8 +15,8 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 | **DB Driver**            | [@neondatabase/serverless](https://neon.tech/docs/serverless/serverless-driver) (HTTP) |
 | **API Server**           | [Hono](https://hono.dev/)                                                              |
 | **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/)                                  |
-| **Styling**              | [Tailwind CSS v4](https://tailwindcss.com/)                                            |
-| **UI Components**        | [shadcn/ui](https://ui.shadcn.com/)                                                    |
+| **UI Library**           | [ZUI](https://github.com/mrmartineau/zui) (CSS-first)                                  |
+| **Icons**                | [Phosphor Icons](https://phosphoricons.com/)                                           |
 | **Validation**           | [Zod](https://zod.dev/)                                                                |
 | **Linting & Formatting** | [Biome](https://biomejs.dev/)                                                          |
 | **Testing**              | [Vitest](https://vitest.dev/)                                                          |
@@ -52,7 +52,7 @@ Copy `.env.example` → `.env` and fill in:
 ```env
 DATABASE_URL=postgresql://...        # from step 2
 BETTER_AUTH_SECRET=                  # see below
-BETTER_AUTH_URL=http://ras.localhost:1355
+BETTER_AUTH_URL=http://localhost:3450
 ```
 
 Generate a secret:
@@ -75,7 +75,7 @@ This applies the SQL files in `drizzle/` to your database. Tables created: `user
 bun run dev
 ```
 
-App runs at http://ras.localhost:1355.
+App runs at http://localhost:3450 (proxied as `[ras.localhost](http://ras.localhost:1355)` via [portless](https://github.com/sidwebworks/portless)).
 
 ## Project Structure
 
@@ -86,14 +86,7 @@ db/                     # Drizzle schema + client
 drizzle/                # Generated migration SQL
 drizzle.config.ts       # Drizzle Kit config
 src/
-├── components/
-│   ├── ui/             # shadcn components
-│   ├── AuthProvider.tsx
-│   ├── login-form.tsx
-│   ├── sign-up-form.tsx
-│   ├── forgot-password-form.tsx
-│   ├── update-password-form.tsx
-│   └── LogoutButton.tsx
+├── components/         # AuthProvider, login/signup/password forms, LogoutButton
 ├── lib/
 │   ├── auth/
 │   │   ├── server.ts   # better-auth server config
@@ -101,8 +94,8 @@ src/
 │   ├── fetching/
 │   │   ├── user.ts     # session + profile queries
 │   │   └── errorResponse.ts
-│   ├── get-error-message.ts
-│   └── utils.ts
+│   ├── createTitle.ts
+│   └── get-error-message.ts
 ├── routes/             # TanStack Router file-based
 │   ├── __root.tsx
 │   ├── _authed/        # protected
@@ -117,7 +110,8 @@ src/
 ├── types/db.ts
 ├── constants.ts
 ├── main.tsx
-└── styles.css
+├── reportWebVitals.ts
+└── styles.css           # imports @mrmartineau/zui/css
 ```
 
 ## Auth Flow
@@ -228,16 +222,18 @@ Authenticate first if needed: `bunx wrangler login`.
 | `bun run test`        | Run Vitest                              |
 | `bun run type-check`  | TypeScript check                        |
 | `bun run cf-typegen`  | Regenerate `worker-configuration.d.ts`  |
-| `bun run lint:check`  | Biome check + autofix                   |
+| `bun run check`       | Biome check + autofix                   |
 | `bun run format`      | Biome format                            |
 
-## Adding shadcn components
+## Styling
 
-```bash
-bunx shadcn@latest add button card input
+[ZUI](https://github.com/mrmartineau/zui) is a CSS-first component + token library. Imported once in `src/styles.css`:
+
+```css
+@import "@mrmartineau/zui/css";
 ```
 
-Configured in `components.json`.
+Components are plain elements with `zui-*` classes (`zui-button`, `zui-card`, `zui-input`, etc.) — no JS wrappers, no build step. Design tokens (`--space-*`, `--color-*`, `--step-*`) are exposed as CSS custom properties.
 
 ## Configuration knobs
 

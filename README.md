@@ -114,6 +114,112 @@ src/
 └── styles.css           # imports @mrmartineau/zui/css
 ```
 
+## Extending the app
+
+Quick recipes for the most common things you'll want to add. Agents: see [`AGENTS.md`](./AGENTS.md) for the same recipes plus project conventions.
+
+### Add a route
+
+Routes are file-based via [TanStack Router](https://tanstack.com/router). Drop a file into `src/routes` and the route tree (`src/routeTree.gen.ts`) regenerates automatically while `bun run dev` is running.
+
+```tsx
+// src/routes/about.tsx
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/about")({
+  component: About,
+});
+
+function About() {
+  return <h1>About</h1>;
+}
+```
+
+Folder conventions used here:
+
+- `src/routes/_public/*` — unauthenticated pages (login, sign-up, forgot-password). The `_public` segment is a [pathless layout route](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#pathless-layout-routes), so files inside resolve at `/login`, `/sign-up`, etc.
+- `src/routes/_authed/*` — pages behind auth. `_authed/route.tsx` runs `getSession()` in `beforeLoad` and redirects to `/login` when there's no session. Anything under `_authed/` is protected by inheritance.
+- `src/routes/_authed/app/*` — the app shell. Files here resolve at `/app/...`.
+
+To add a protected page, create `src/routes/_authed/app/billing.tsx` and it's live at `/app/billing` with auth already enforced by the parent layout.
+
+### Add a link
+
+Use `Link` from `@tanstack/react-router` for SPA navigation. Prefer route constants from `src/constants.ts` rather than hard-coding paths:
+
+```tsx
+import { Link } from "@tanstack/react-router";
+import { ROUTE_APP_HOME } from "@/constants";
+
+<Link to={ROUTE_APP_HOME}>App</Link>;
+```
+
+When you add a new top-level route, add a matching `ROUTE_*` constant so links stay refactor-safe.
+
+### Add a layout
+
+`src/routes/__root.tsx` is the app-wide shell — anything you put there appears on every page, with route content rendered at `<Outlet />`.
+
+For section-level layouts (e.g. an authed sidebar), edit `src/routes/_authed/route.tsx` — its JSX wraps every authed child route.
+
+### Add an API endpoint
+
+Hono is mounted at `/api`. Edit `src/worker/hono.ts`:
+
+```ts
+import { requireRequestContext } from "./context";
+
+app.get("/widgets", async (c) => {
+  const ctx = await requireRequestContext(c);
+  if (ctx instanceof Response) return ctx; // 401
+  const { db, user } = ctx;
+  const rows = await db.select().from(widgets).where(eq(widgets.ownerId, user.id));
+  return c.json(rows);
+});
+```
+
+`requireRequestContext(c)` returns either `{db, user, profile}` or a 401 `Response`. Use `createRequestContext(c)` instead if the route is optionally authenticated.
+
+For anything bigger than a couple of handlers, extract to its own file in `src/worker/` (see `profile.ts` for the shape) and import it into `hono.ts`.
+
+### Add a database table
+
+1. Edit `db/schema.ts` — add the table with Drizzle's `pgTable`.
+2. `bun run db:generate` — emits a new SQL file in `drizzle/`.
+3. Commit the SQL.
+4. `bun run db:migrate` — applies it to whatever `DATABASE_URL` points at.
+
+Re-run `bun run cf-typegen` only if you change `wrangler.jsonc` bindings — schema changes don't need it.
+
+### Add data fetching with TanStack Query
+
+The QueryClient is already provided in `src/main.tsx`. Use `useQuery` directly in a component, or call it from inside a route loader to prefetch.
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+
+function Widgets() {
+  const { data } = useQuery({
+    queryKey: ["widgets"],
+    queryFn: () => fetch("/api/widgets").then((r) => r.json()),
+  });
+  return <ul>{data?.map((w) => <li key={w.id}>{w.name}</li>)}</ul>;
+}
+```
+
+For session-aware data, see `src/lib/fetching/user.ts` for the existing `getSession()` / profile patterns.
+
+### Add a component
+
+Plain React components live in `src/components/`. UI primitives come from [ZUI](https://github.com/mrmartineau/zui) — use `zui-button`, `zui-card`, `zui-input` classes on regular HTML elements rather than wrapping anything. Tokens (`--space-*`, `--color-*`, `--step-*`) are CSS custom properties, available in any stylesheet.
+
+### Add an environment variable
+
+1. Add to `.env` for local dev.
+2. Add to `wrangler.jsonc` `vars` (non-secret) or `bunx wrangler secret put NAME` (secret).
+3. Add to `WorkerEnv` in `src/worker/env.ts` so it's typed inside Hono handlers.
+4. Run `bun run cf-typegen` to refresh `worker-configuration.d.ts`.
+
 ## Auth Flow
 
 Email/password via [better-auth](https://www.better-auth.com/):
@@ -153,14 +259,15 @@ Add new routes in `hono.ts`. Use `requireRequestContext(c)` inside handlers need
 
 ## Database
 
-Drizzle ORM with Neon HTTP driver — designed for Workers' edge runtime.
+Drizzle ORM with Neon HTTP driver — designed for Workers' edge runtime. Full guide in [`docs/DATABASE.md`](./docs/DATABASE.md): conventions, safe vs. destructive migrations, hand-editing SQL, switching providers, prod migrations.
 
 ### Editing schema
 
 1. Edit `db/schema.ts`
 2. `bun run db:generate` → emits SQL in `drizzle/`
-3. Commit the SQL
-4. `bun run db:migrate` → applies to your DB
+3. Inspect the SQL — stop if it drops or renames anything you didn't intend
+4. Commit `db/schema.ts` + the SQL + `drizzle/meta/` together
+5. `bun run db:migrate` → applies to your DB
 
 ### Querying
 

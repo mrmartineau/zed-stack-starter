@@ -1,4 +1,4 @@
-export const REPO_URL = "https://github.com/mrmartineau/z-stack-starter";
+export const REPO_URL = "https://github.com/mrmartineau/zed-stack-starter";
 
 export const ALLOW_SIGNUP = false;
 

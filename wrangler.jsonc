@@ -19,6 +19,14 @@
   },
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
+  /**
+   * Hyperdrive
+   * Setup guide (Neon): https://neon.com/docs/guides/cloudflare-workers
+   * Create the config:
+   *   npx wrangler hyperdrive create my-neon-hyperdrive \
+   *     --connection-string="postgres://USERNAME:PASSWORD@HOSTNAME:PORT/DATABASE"
+   * Then replace the `id` below with the returned Hyperdrive id.
+   */
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",

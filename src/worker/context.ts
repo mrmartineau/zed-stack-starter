@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { createDb, type Db } from "../../db/client";
+import type { Db } from "../../db/client";
 import { profiles } from "../../db/schema";
 import { createAuth } from "@/lib/auth/server";
 import { errorResponse } from "@/lib/fetching/errorResponse";
@@ -45,8 +45,8 @@ export const getProfileByApiKey = async (db: Db, apiKey: string) => {
 export const createRequestContext = async (
   context: Context<{ Bindings: WorkerEnv }>,
 ): Promise<RequestContext> => {
-  const db = createDb(context.env);
-  const auth = createAuth(context.env);
+  const db = context.var.db;
+  const auth = createAuth(context.env, db);
   const session = await auth.api.getSession({
     headers: context.req.raw.headers,
   });

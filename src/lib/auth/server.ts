@@ -1,7 +1,7 @@
 import { compare, hash } from "bcryptjs";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
-import { createDb, type DbEnv } from "../../../db/client";
+import type { Db, DbEnv } from "../../../db/client";
 import {
   authAccounts,
   authJwks,
@@ -32,9 +32,7 @@ const getTrustedOrigins = (env: AuthEnv) => {
 
 const isSignUpDisabled = (env: AuthEnv) => env.BETTER_AUTH_DISABLE_SIGNUP === "true";
 
-export const createAuth = (env: AuthEnv) => {
-  const db = createDb(env);
-
+export const createAuth = (env: AuthEnv, db: Db) => {
   return betterAuth({
     advanced: {
       database: {

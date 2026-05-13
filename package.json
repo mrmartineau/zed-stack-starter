@@ -44,6 +44,7 @@
     "wrangler": "^4.54.0"
   },
   "name": "zed-stack-starter",
+  "packageManager": "pnpm@11.1.1",
   "private": true,
   "scripts": {
     "build": "vite build && tsc",

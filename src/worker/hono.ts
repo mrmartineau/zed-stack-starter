@@ -11,6 +11,7 @@ export const app = new Hono<{ Bindings: WorkerEnv }>().basePath("/api");
 app.get("/", (c) => c.text("Z Stack API", 200));
 
 app.use("*", dbMiddleware);
+
 app.on(["GET", "POST"], "/auth/*", async (c) => {
   return await createAuth(c.env, c.var.db).handler(c.req.raw);
 });

@@ -18,8 +18,8 @@
       "type": "image/png"
     }
   ],
-  "name": "React Supabase Starter",
-  "short_name": "React Supabase Starter",
+  "name": "Zed Stack Starter",
+  "short_name": "Zed Stack Starter",
   "start_url": ".",
   "theme_color": "#000000"
 }

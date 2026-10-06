@@ -9,42 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PublicRouteRouteImport } from './routes/_public/route'
-import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PublicUpdatePasswordRouteImport } from './routes/_public/update-password'
-import { Route as PublicSignUpSuccessRouteImport } from './routes/_public/sign-up-success'
-import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
-import { Route as PublicLoginRouteImport } from './routes/_public/login'
+import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
+import { Route as PublicLoginRouteImport } from './routes/_public/login'
+import { Route as PublicSignUpRouteImport } from './routes/_public/sign-up'
+import { Route as PublicSignUpSuccessRouteImport } from './routes/_public/sign-up-success'
+import { Route as PublicUpdatePasswordRouteImport } from './routes/_public/update-password'
 import { Route as AuthedAppIndexRouteImport } from './routes/_authed/app/index'
 
-const PublicRouteRoute = PublicRouteRouteImport.update({
-  id: '/_public',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const PublicRouteRoute = PublicRouteRouteImport.update({
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicUpdatePasswordRoute = PublicUpdatePasswordRouteImport.update({
-  id: '/update-password',
-  path: '/update-password',
-  getParentRoute: () => PublicRouteRoute,
-} as any)
-const PublicSignUpSuccessRoute = PublicSignUpSuccessRouteImport.update({
-  id: '/sign-up-success',
-  path: '/sign-up-success',
-  getParentRoute: () => PublicRouteRoute,
-} as any)
-const PublicSignUpRoute = PublicSignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
+const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicLoginRoute = PublicLoginRouteImport.update({
@@ -52,9 +42,19 @@ const PublicLoginRoute = PublicLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
+const PublicSignUpRoute = PublicSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicSignUpSuccessRoute = PublicSignUpSuccessRouteImport.update({
+  id: '/sign-up-success',
+  path: '/sign-up-success',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicUpdatePasswordRoute = PublicUpdatePasswordRouteImport.update({
+  id: '/update-password',
+  path: '/update-password',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthedAppIndexRoute = AuthedAppIndexRouteImport.update({
@@ -133,11 +133,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_public': {
-      id: '/_public'
-      path: ''
+    '/': {
+      id: '/'
+      path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof PublicRouteRouteImport
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -147,32 +147,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
+    '/_public': {
+      id: '/_public'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/update-password': {
-      id: '/_public/update-password'
-      path: '/update-password'
-      fullPath: '/update-password'
-      preLoaderRoute: typeof PublicUpdatePasswordRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/sign-up-success': {
-      id: '/_public/sign-up-success'
-      path: '/sign-up-success'
-      fullPath: '/sign-up-success'
-      preLoaderRoute: typeof PublicSignUpSuccessRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/sign-up': {
-      id: '/_public/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof PublicSignUpRouteImport
+    '/_public/forgot-password': {
+      id: '/_public/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof PublicForgotPasswordRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/login': {
@@ -182,11 +168,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicLoginRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_public/forgot-password': {
-      id: '/_public/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof PublicForgotPasswordRouteImport
+    '/_public/sign-up': {
+      id: '/_public/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof PublicSignUpRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/sign-up-success': {
+      id: '/_public/sign-up-success'
+      path: '/sign-up-success'
+      fullPath: '/sign-up-success'
+      preLoaderRoute: typeof PublicSignUpSuccessRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/update-password': {
+      id: '/_public/update-password'
+      path: '/update-password'
+      fullPath: '/update-password'
+      preLoaderRoute: typeof PublicUpdatePasswordRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_authed/app/': {

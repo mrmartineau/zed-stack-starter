@@ -10,9 +10,9 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 | **Routing**              | [TanStack Router](https://tanstack.com/router)                                         |
 | **Data Fetching**        | [TanStack Query](https://tanstack.com/query)                                           |
 | **Auth**                 | [better-auth](https://www.better-auth.com/)                                            |
-| **Database**             | Any Postgres (default: [Neon](https://neon.tech/))                                     |
+| **Database**             | [Neon](https://neon.tech/) Postgres via [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/) |
 | **ORM**                  | [Drizzle ORM](https://orm.drizzle.team/)                                               |
-| **DB Driver**            | [@neondatabase/serverless](https://neon.tech/docs/serverless/serverless-driver) (HTTP) |
+| **DB Driver**            | [node-postgres (`pg`)](https://node-postgres.com/)                                     |
 | **API Server**           | [Hono](https://hono.dev/)                                                              |
 | **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/)                                  |
 | **UI Library**           | [ZUI](https://github.com/mrmartineau/zui) (CSS-first)                                  |
@@ -23,8 +23,8 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 
 ## Prerequisites
 
-- [Bun](https://bun.sh/) (recommended) or Node.js 20+
-- A Postgres database — [Neon](https://neon.tech/) recommended (free tier works)
+- [pnpm](https://pnpm.io/) and Node.js 20+
+- A [Neon](https://neon.tech/) Postgres database (free tier works)
 - A [Cloudflare](https://cloudflare.com/) account (for deployment)
 
 ## Quick Start
@@ -32,25 +32,32 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 ### 1. Install
 
 ```bash
-bun install
+pnpm install
 ```
 
 ### 2. Provision Postgres
 
-Sign up at [Neon](https://console.neon.tech/), create a project, and copy the **pooled** connection string. It looks like:
+Sign up at [Neon](https://console.neon.tech/), create a project, and copy the **direct** (not pooled) connection string. Hyperdrive does the pooling. It looks like:
 
 ```
-postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/DBNAME?sslmode=require
+postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/DBNAME?sslmode=require
 ```
 
-> Any Postgres works — Supabase, RDS, Railway, local Docker, etc. Just pass a valid connection string.
+Then create a Hyperdrive config for it and put the returned id in `wrangler.jsonc` → `hyperdrive[0].id`:
+
+```bash
+pnpm wrangler hyperdrive create my-app-db --connection-string="postgresql://..."
+```
+
+See Neon's guide: https://neon.com/docs/guides/cloudflare-workers
 
 ### 3. Environment
 
 Copy `.env.example` → `.env` and fill in:
 
 ```env
-DATABASE_URL=postgresql://...        # from step 2
+DATABASE_URL=postgresql://...        # from step 2 — used by drizzle-kit (migrations)
+CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://...  # same DB — used by the Worker in local dev
 BETTER_AUTH_SECRET=                  # see below
 BETTER_AUTH_URL=http://localhost:3450
 ```
@@ -64,7 +71,7 @@ openssl rand -hex 32
 ### 4. Run migrations
 
 ```bash
-bun run db:migrate
+pnpm run db:migrate
 ```
 
 This applies the SQL files in `drizzle/` to your database. Tables created: `user`, `session`, `account`, `verification`, `jwks`, `profiles`.
@@ -72,7 +79,7 @@ This applies the SQL files in `drizzle/` to your database. Tables created: `user
 ### 5. Start dev server
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 App runs at http://localhost:3450 (proxied as `[ras.localhost](http://ras.localhost:1355)` via [portless](https://github.com/sidwebworks/portless)).
@@ -82,7 +89,7 @@ App runs at http://localhost:3450 (proxied as `[ras.localhost](http://ras.localh
 ```
 db/                     # Drizzle schema + client
 ├── schema.ts           # Auth tables + profiles
-└── client.ts           # neon-http drizzle client
+└── client.ts           # pg + Drizzle client (Hyperdrive connection string)
 drizzle/                # Generated migration SQL
 drizzle.config.ts       # Drizzle Kit config
 src/
@@ -106,6 +113,7 @@ src/
 │   ├── hono.ts         # routes
 │   ├── env.ts          # typed env bindings
 │   ├── context.ts      # request context (session + DB)
+│   ├── middleware/db.ts # opens a pg Client per request, sets c.var.db
 │   └── profile.ts      # /api/me endpoints
 ├── types/db.ts
 ├── constants.ts
@@ -120,7 +128,7 @@ Quick recipes for the most common things you'll want to add. Agents: see [`AGENT
 
 ### Add a route
 
-Routes are file-based via [TanStack Router](https://tanstack.com/router). Drop a file into `src/routes` and the route tree (`src/routeTree.gen.ts`) regenerates automatically while `bun run dev` is running.
+Routes are file-based via [TanStack Router](https://tanstack.com/router). Drop a file into `src/routes` and the route tree (`src/routeTree.gen.ts`) regenerates automatically while `pnpm run dev` is running.
 
 ```tsx
 // src/routes/about.tsx
@@ -185,11 +193,11 @@ For anything bigger than a couple of handlers, extract to its own file in `src/w
 ### Add a database table
 
 1. Edit `db/schema.ts` — add the table with Drizzle's `pgTable`.
-2. `bun run db:generate` — emits a new SQL file in `drizzle/`.
+2. `pnpm run db:generate` — emits a new SQL file in `drizzle/`.
 3. Commit the SQL.
-4. `bun run db:migrate` — applies it to whatever `DATABASE_URL` points at.
+4. `pnpm run db:migrate` — applies it to whatever `DATABASE_URL` points at.
 
-Re-run `bun run cf-typegen` only if you change `wrangler.jsonc` bindings — schema changes don't need it.
+Re-run `pnpm run cf-typegen` only if you change `wrangler.jsonc` bindings — schema changes don't need it.
 
 ### Add data fetching with TanStack Query
 
@@ -216,9 +224,9 @@ Plain React components live in `src/components/`. UI primitives come from [ZUI](
 ### Add an environment variable
 
 1. Add to `.env` for local dev.
-2. Add to `wrangler.jsonc` `vars` (non-secret) or `bunx wrangler secret put NAME` (secret).
+2. Add to `wrangler.jsonc` `vars` (non-secret) or `pnpm wrangler secret put NAME` (secret).
 3. Add to `WorkerEnv` in `src/worker/env.ts` so it's typed inside Hono handlers.
-4. Run `bun run cf-typegen` to refresh `worker-configuration.d.ts`.
+4. Run `pnpm run cf-typegen` to refresh `worker-configuration.d.ts`.
 
 ## Auth Flow
 
@@ -259,52 +267,60 @@ Add new routes in `hono.ts`. Use `requireRequestContext(c)` inside handlers need
 
 ## Database
 
-Drizzle ORM with Neon HTTP driver — designed for Workers' edge runtime. Full guide in [`docs/DATABASE.md`](./docs/DATABASE.md): conventions, safe vs. destructive migrations, hand-editing SQL, switching providers, prod migrations.
+Drizzle ORM with `pg` (node-postgres), connected to Neon through Cloudflare Hyperdrive. Full guide in [`docs/DATABASE.md`](./docs/DATABASE.md): conventions, safe vs. destructive migrations, hand-editing SQL, switching providers, prod migrations.
 
 ### Editing schema
 
 1. Edit `db/schema.ts`
-2. `bun run db:generate` → emits SQL in `drizzle/`
+2. `pnpm run db:generate` → emits SQL in `drizzle/`
 3. Inspect the SQL — stop if it drops or renames anything you didn't intend
 4. Commit `db/schema.ts` + the SQL + `drizzle/meta/` together
-5. `bun run db:migrate` → applies to your DB
+5. `pnpm run db:migrate` → applies to your DB
 
 ### Querying
 
+Inside a Hono handler, use the `db` on the request context (or `c.var.db`). `src/worker/middleware/db.ts` opens one `pg` Client per request and closes it after the response.
+
+Outside a request, build a client and close it when done:
+
 ```ts
 import { eq } from "drizzle-orm";
-import { createDb } from "../../db/client";
+import { createDbClient } from "../../db/client";
 import { profiles } from "../../db/schema";
 
-const db = createDb(env);
+const { client, db } = createDbClient(env);
+await client.connect();
 const [profile] = await db.select().from(profiles).where(eq(profiles.id, userId));
+await client.end();
 ```
 
-### Switching databases
+### How the connection works
 
-The `@neondatabase/serverless` driver speaks Postgres wire protocol over HTTP. To switch off Neon:
+- **Deployed**: the Worker reads `env.HYPERDRIVE.connectionString`. Hyperdrive pools connections to Neon and caches the connection setup.
+- **Local dev**: Wrangler fills the `HYPERDRIVE` binding from `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` in `.env`.
+- **Migrations**: drizzle-kit runs in Node, not in the Worker, so it uses `DATABASE_URL`.
 
-- **Self-hosted / RDS / Supabase**: swap `db/client.ts` to `drizzle-orm/node-postgres` + `pg.Pool` (requires `nodejs_compat` flag — already set in `wrangler.jsonc`).
-- **Cloudflare Hyperdrive**: bind a Hyperdrive in `wrangler.jsonc`, read its `connectionString`.
+`db/client.ts` falls back to `DATABASE_URL` when there is no `HYPERDRIVE` binding.
 
 ## Deployment
 
 ### Set secrets
 
 ```bash
-bunx wrangler secret put DATABASE_URL
-bunx wrangler secret put BETTER_AUTH_SECRET
+pnpm wrangler secret put BETTER_AUTH_SECRET
 ```
+
+No `DATABASE_URL` secret is needed. The deployed Worker gets its connection string from the Hyperdrive binding (see step 2).
 
 Update `BETTER_AUTH_URL` in `wrangler.jsonc` `vars` to your production URL.
 
 ### Deploy
 
 ```bash
-bun run deploy
+pnpm run deploy
 ```
 
-Authenticate first if needed: `bunx wrangler login`.
+Authenticate first if needed: `pnpm wrangler login`.
 
 ### Wrangler config
 
@@ -314,23 +330,24 @@ Authenticate first if needed: `bunx wrangler login`.
 - `assets.not_found_handling: "single-page-application"` — SPA fallback
 - `placement.mode: "smart"` — Worker runs near your DB
 - `ai.binding: "AI"` — Workers AI available as `env.AI`
+- `hyperdrive[0].binding: "HYPERDRIVE"` — Neon connection via Hyperdrive, available as `env.HYPERDRIVE`
 
 ## Scripts
 
 | Script                | What it does                            |
 | --------------------- | --------------------------------------- |
-| `bun run dev`         | Start dev server on port 3450           |
-| `bun run build`       | Vite build + tsc                        |
-| `bun run preview`     | Preview production build                |
-| `bun run deploy`      | Build + `wrangler deploy`               |
-| `bun run db:generate` | Generate Drizzle migrations from schema |
-| `bun run db:migrate`  | Apply migrations to DATABASE_URL        |
-| `bun run db:studio`   | Open Drizzle Studio                     |
-| `bun run test`        | Run Vitest                              |
-| `bun run type-check`  | TypeScript check                        |
-| `bun run cf-typegen`  | Regenerate `worker-configuration.d.ts`  |
-| `bun run check`       | Biome check + autofix                   |
-| `bun run format`      | Biome format                            |
+| `pnpm run dev`         | Start dev server on port 3450           |
+| `pnpm run build`       | Vite build + tsc                        |
+| `pnpm run preview`     | Preview production build                |
+| `pnpm run deploy`      | Build + `wrangler deploy`               |
+| `pnpm run db:generate` | Generate Drizzle migrations from schema |
+| `pnpm run db:migrate`  | Apply migrations to `DATABASE_URL`      |
+| `pnpm run db:studio`   | Open Drizzle Studio                     |
+| `pnpm run test`        | Run Vitest                              |
+| `pnpm run type-check`  | TypeScript check                        |
+| `pnpm run cf-typegen`  | Regenerate `worker-configuration.d.ts`  |
+| `pnpm run check`       | Biome check + autofix                   |
+| `pnpm run format`      | Biome format                            |
 
 ## Styling
 
@@ -346,7 +363,8 @@ Components are plain elements with `zui-*` classes (`zui-button`, `zui-card`, `z
 
 | Env var                       | Purpose                                        |
 | ----------------------------- | ---------------------------------------------- |
-| `DATABASE_URL`                | Postgres connection string                     |
+| `DATABASE_URL`                | Direct Neon URL. Used by drizzle-kit           |
+| `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` | Neon URL for the `HYPERDRIVE` binding in local dev |
 | `BETTER_AUTH_SECRET`          | 32+ char random hex; signs sessions            |
 | `BETTER_AUTH_URL`             | Public origin (cookies + redirect URLs)        |
 | `BETTER_AUTH_TRUSTED_ORIGINS` | Comma-separated. Defaults to `BETTER_AUTH_URL` |

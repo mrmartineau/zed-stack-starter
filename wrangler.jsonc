@@ -23,7 +23,7 @@
    * Hyperdrive
    * Setup guide (Neon): https://neon.com/docs/guides/cloudflare-workers
    * Create the config:
-   *   npx wrangler hyperdrive create my-neon-hyperdrive-{app} \
+   *   pnpm wrangler hyperdrive create my-neon-hyperdrive-{app} \
    *     --connection-string="postgres://USERNAME:PASSWORD@HOSTNAME:PORT/DATABASE"
    * Then replace the `id` below with the returned Hyperdrive id.
    */

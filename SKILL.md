@@ -9,7 +9,7 @@ Skill for extending this repo. Pair with [`AGENTS.md`](./AGENTS.md) for full con
 
 ## Stack snapshot
 
-React 19 + TanStack Router (file-based) + TanStack Query + Hono on Cloudflare Workers + Drizzle + Postgres (Neon HTTP) + better-auth + ZUI. Bun. Biome. Vitest.
+React 19 + TanStack Router (file-based) + TanStack Query + Hono on Cloudflare Workers + Drizzle + `pg` + Neon Postgres via Cloudflare Hyperdrive + better-auth + ZUI. pnpm. Biome. Vitest.
 
 ## Hard rules (do not violate)
 
@@ -111,10 +111,10 @@ export const widgets = pgTable(
 
 Then:
 
-1. `bun run db:generate` — emits SQL in `drizzle/`.
+1. `pnpm run db:generate` — emits SQL in `drizzle/`.
 2. Inspect the SQL. **Stop and ask the user** if you see any unexpected `DROP`, `ALTER ... DROP COLUMN`, or rename — drizzle-kit sees renames as drop+create unless you tell it otherwise.
 3. Hand-edit the SQL when needed (backfill before `SET NOT NULL`, `USING` clauses on type changes, split destructive changes). Don't re-run `db:generate` before `db:migrate` after a hand-edit.
-4. `bun run db:migrate` locally.
+4. `pnpm run db:migrate` locally.
 5. Commit `db/schema.ts` + new SQL + `drizzle/meta/` updates together.
 
 Conventions in this repo:
@@ -128,14 +128,15 @@ Never run migrations against a non-local DB without explicit user instruction.
 
 ## Recipe — query the DB
 
-Inside a Hono handler, use the `db` already on the request context. Outside, build one:
+Inside a Hono handler, use the `db` already on the request context. Outside, build one and call `await client.end()` when done:
 
 ```ts
 import { eq } from "drizzle-orm";
-import { createDb } from "../../db/client";
+import { createDbClient } from "../../db/client";
 import { widgets } from "../../db/schema";
 
-const db = createDb(env);
+const { client, db } = createDbClient(env);
+await client.connect();
 const [w] = await db.select().from(widgets).where(eq(widgets.id, id));
 ```
 
@@ -157,15 +158,15 @@ For session/profile, use helpers in `src/lib/fetching/user.ts` — don't duplica
 ## Recipe — env var
 
 1. `.env` for local.
-2. `wrangler.jsonc` `vars` (non-secret) or `bunx wrangler secret put NAME` (secret) — ask the user before running this against a remote env.
+2. `wrangler.jsonc` `vars` (non-secret) or `pnpm wrangler secret put NAME` (secret) — ask the user before running this against a remote env.
 3. Add to `WorkerEnv` in `src/worker/env.ts`.
-4. `bun run cf-typegen` if you added a new binding type (KV, D1, etc.), not for plain string vars.
+4. `pnpm run cf-typegen` if you added a new binding type (KV, D1, etc.), not for plain string vars.
 
 ## Pre-handoff checklist
 
-1. `bun run check` (Biome).
-2. `bun run type-check` (tsc).
-3. `bun run test` if anything tested was touched.
+1. `pnpm run check` (Biome).
+2. `pnpm run type-check` (tsc).
+3. `pnpm run test` if anything tested was touched.
 4. New route → `ROUTE_*` constant added if linked from JSX.
 5. Schema change → matching SQL file committed in `drizzle/`.
 6. No hand-edits to generated files.
@@ -173,7 +174,7 @@ For session/profile, use helpers in `src/lib/fetching/user.ts` — don't duplica
 ## Ask before doing
 
 - Destructive migrations.
-- `bun run deploy`.
+- `pnpm run deploy`.
 - `wrangler secret put` on a non-local env.
 - Adding a new top-level dependency.
 - Switching the DB driver.

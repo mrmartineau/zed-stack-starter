@@ -7,20 +7,29 @@ Step-by-step setup for a fresh Z Stack Starter project. ~10 minutes.
 ```bash
 git clone <this-repo> my-app
 cd my-app
-bun install
+pnpm install
 ```
 
 ## 2. Provision Postgres (Neon)
 
 1. Go to https://console.neon.tech/ and sign in
 2. Create a new project (any region — pick one close to your Cloudflare deploy)
-3. After creation, find **Connection string** → **Pooled connection**
+3. After creation, find **Connection string**. Turn **Connection pooling** off (Hyperdrive does the pooling).
 4. Copy the string. Format:
    ```
-   postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+   postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
    ```
 
-> Other Postgres options: Supabase (use the **Session pooler** string), Railway, Fly Postgres, RDS, local `docker run postgres`.
+## 2b. Create the Hyperdrive config
+
+The Worker connects to Neon through [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/). Neon's guide: https://neon.com/docs/guides/cloudflare-workers
+
+```bash
+pnpm wrangler login
+pnpm wrangler hyperdrive create my-app-db --connection-string="postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/neondb?sslmode=require"
+```
+
+Copy the returned id into `wrangler.jsonc` → `hyperdrive[0].id`.
 
 ## 3. Generate auth secret
 
@@ -41,15 +50,19 @@ cp .env.example .env
 Fill in:
 
 ```env
-DATABASE_URL=postgresql://USER:PASS@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://USER:PASS@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
+CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://USER:PASS@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
 BETTER_AUTH_SECRET=<paste 64-char hex from step 3>
 BETTER_AUTH_URL=http://localhost:3450
 ```
 
+- `DATABASE_URL` — used by drizzle-kit (`db:migrate`, `db:generate`, `db:studio`).
+- `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` — used by the Worker in `pnpm run dev`. Wrangler gives it to the `HYPERDRIVE` binding.
+
 ## 5. Apply schema to DB
 
 ```bash
-bun run db:migrate
+pnpm run db:migrate
 ```
 
 This runs the SQL files in `drizzle/` against `DATABASE_URL`. You should see 6 tables created:
@@ -60,13 +73,13 @@ This runs the SQL files in `drizzle/` against `DATABASE_URL`. You should see 6 t
 Verify with Drizzle Studio:
 
 ```bash
-bun run db:studio
+pnpm run db:studio
 ```
 
 ## 6. Start dev server
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 Open http://localhost:3450.
@@ -81,20 +94,13 @@ The `databaseHooks.user.create.after` callback in `src/lib/auth/server.ts` autom
 
 ## 8. Cloudflare deploy
 
-### Authenticate
-
-```bash
-bunx wrangler login
-```
-
 ### Set production secrets
 
 ```bash
-bunx wrangler secret put DATABASE_URL
-bunx wrangler secret put BETTER_AUTH_SECRET
+pnpm wrangler secret put BETTER_AUTH_SECRET
 ```
 
-Paste your prod values when prompted. (Use a separate Neon branch/database for prod — don't reuse dev.)
+Paste your prod value when prompted. The database connection comes from the Hyperdrive config (step 2b), not a secret. Use a separate Neon branch for prod and point a separate Hyperdrive config at it — don't reuse dev.
 
 ### Update public URL
 
@@ -111,7 +117,7 @@ Or set per-environment using `[env.production]` blocks.
 ### Deploy
 
 ```bash
-bun run deploy
+pnpm run deploy
 ```
 
 Wrangler builds + uploads the Worker + assets. Visit the printed URL.
@@ -128,9 +134,9 @@ Wrangler builds + uploads the Worker + assets. Visit the printed URL.
 ### Add a new column
 
 1. Edit `db/schema.ts`
-2. `bun run db:generate`
+2. `pnpm run db:generate`
 3. Inspect the new file in `drizzle/`
-4. `bun run db:migrate`
+4. `pnpm run db:migrate`
 
 ### Disable signups
 
@@ -191,16 +197,16 @@ emailAndPassword: {
 
 ## Troubleshooting
 
-### `Missing DATABASE_URL`
+### `Missing database connection string`
 
-Worker can't read your secret. Either:
+The Worker has no `HYPERDRIVE` binding and no `DATABASE_URL`. Either:
 
-- Local: missing `.env` or wrong key name
-- Prod: didn't run `wrangler secret put DATABASE_URL`
+- Local: `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` is missing from `.env`
+- Prod: the `hyperdrive` block in `wrangler.jsonc` is missing or has the wrong id
 
 ### `relation "user" does not exist`
 
-You skipped `bun run db:migrate`.
+You skipped `pnpm run db:migrate`.
 
 ### `Invalid origin` when signing in
 
@@ -217,5 +223,5 @@ Check `wrangler.jsonc` has `"compatibility_flags": ["nodejs_compat"]`.
 ### Type errors after editing wrangler.jsonc
 
 ```bash
-bun run cf-typegen
+pnpm run cf-typegen
 ```

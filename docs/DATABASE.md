@@ -3,7 +3,8 @@
 How to add, modify, and work with database tables in this repo.
 
 - **ORM**: [Drizzle](https://orm.drizzle.team/)
-- **Driver**: `@neondatabase/serverless` (Postgres wire over HTTP — Workers-compatible)
+- **Database**: [Neon](https://neon.tech/) Postgres, reached through [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/)
+- **Driver**: `pg` (node-postgres) with `drizzle-orm/node-postgres`
 - **Migration tool**: [drizzle-kit](https://orm.drizzle.team/docs/kit-overview)
 - **Single source of truth**: [`db/schema.ts`](../db/schema.ts)
 - **Generated SQL**: [`drizzle/`](../drizzle/) — committed, never hand-edited
@@ -15,12 +16,12 @@ You write **TypeScript** in `db/schema.ts`. drizzle-kit diffs your schema agains
 ```
 db/schema.ts            ← edit this
       │
-      │  bun run db:generate
+      │  pnpm run db:generate
       ▼
 drizzle/0001_xxx.sql    ← generated, commit
 drizzle/meta/_journal   ← generated, commit
       │
-      │  bun run db:migrate
+      │  pnpm run db:migrate
       ▼
    Postgres
 ```
@@ -29,9 +30,9 @@ drizzle/meta/_journal   ← generated, commit
 
 | Command | What it does |
 | --- | --- |
-| `bun run db:generate` | Diff `schema.ts` vs last snapshot → emit a new SQL file in `drizzle/`. |
-| `bun run db:migrate` | Apply unapplied SQL files to `DATABASE_URL`. |
-| `bun run db:studio` | Open Drizzle Studio in the browser (table browser + ad-hoc queries). |
+| `pnpm run db:generate` | Diff `schema.ts` vs last snapshot → emit a new SQL file in `drizzle/`. |
+| `pnpm run db:migrate` | Apply unapplied SQL files to `DATABASE_URL`. |
+| `pnpm run db:studio` | Open Drizzle Studio in the browser (table browser + ad-hoc queries). |
 
 `DATABASE_URL` must be set in `.env` for any of these to work. Migrations target whatever DB that URL points at — be careful pointing it at staging/prod.
 
@@ -76,13 +77,13 @@ Look at `db/schema.ts` before adding anything; copy the patterns already there.
    );
    ```
 
-2. `bun run db:generate`. New file appears in `drizzle/`, e.g. `0001_<adjective_noun>.sql`.
+2. `pnpm run db:generate`. New file appears in `drizzle/`, e.g. `0001_<adjective_noun>.sql`.
 
 3. **Inspect the SQL.** Verify it only does what you expect:
    - `CREATE TABLE` statements only.
    - No `DROP`, no `ALTER ... DROP`, no `RENAME` you didn't intend.
 
-4. `bun run db:migrate` to apply locally.
+4. `pnpm run db:migrate` to apply locally.
 
 5. Commit `db/schema.ts` + the new SQL file + `drizzle/meta/` updates together. Reviewing the SQL diff is the safety net for the next person.
 
@@ -99,7 +100,7 @@ drizzle-kit handles most changes automatically. Some are safe; some need extra c
 - Drop an index.
 - Widen a type (`varchar(50)` → `text`).
 
-Workflow: edit `schema.ts`, `bun run db:generate`, inspect, `bun run db:migrate`.
+Workflow: edit `schema.ts`, `pnpm run db:generate`, inspect, `pnpm run db:migrate`.
 
 ### Needs care — multi-step
 
@@ -117,7 +118,7 @@ Workflow: edit `schema.ts`, `bun run db:generate`, inspect, `bun run db:migrate`
 - Removing a `NOT NULL` (usually fine, but signal it).
 - Switching a primary key.
 
-If you see any of these in `bun run db:generate`'s output and didn't intend them, **stop**, revert your `schema.ts` edit, and figure out why drizzle-kit thinks they're needed (often: you typoed a column name and it's seeing a rename as drop+create).
+If you see any of these in `pnpm run db:generate`'s output and didn't intend them, **stop**, revert your `schema.ts` edit, and figure out why drizzle-kit thinks they're needed (often: you typoed a column name and it's seeing a rename as drop+create).
 
 ## Hand-editing generated SQL
 
@@ -150,41 +151,44 @@ app.get("/widgets", async (c) => {
 });
 ```
 
-Outside of a request, build a client manually:
+Outside of a request, build a client manually and close it when done:
 
 ```ts
-import { createDb } from "../../db/client";
-const db = createDb(env);
+import { createDbClient } from "../../db/client";
+const { client, db } = createDbClient(env);
+await client.connect();
+// ...queries
+await client.end();
 ```
 
 For inserts / updates / deletes, follow Drizzle docs — `db.insert(widgets).values({...}).returning()`, `db.update(widgets).set({...}).where(...)`, etc.
 
 ## Inspecting & debugging
 
-- `bun run db:studio` — Drizzle Studio, table browser + SQL console.
+- `pnpm run db:studio` — Drizzle Studio, table browser + SQL console.
 - `psql "$DATABASE_URL"` — raw psql against Neon (Neon supports psql even on free tier).
 - Failed migration leaves Postgres in whatever state the failing statement got to. Inspect with `\d table_name` in psql, fix data or hand-edit the SQL, re-run `db:migrate`.
 
 ## Resetting local DB
 
-Neon: drop and recreate the branch (or use a new database) via the Neon console, point `DATABASE_URL` at it, `bun run db:migrate`. Don't try to "rollback" individual migrations — drizzle-kit's migrator is forward-only.
+Neon: drop and recreate the branch (or use a new database) via the Neon console, point `DATABASE_URL` at it, `pnpm run db:migrate`. Don't try to "rollback" individual migrations — drizzle-kit's migrator is forward-only.
 
-## Switching off Neon
+## Connection strings
 
-`@neondatabase/serverless` is just a Postgres wire client over HTTP. To use plain Postgres (RDS, Supabase, local Docker, Hyperdrive):
+| Where | Variable | Used by |
+| --- | --- | --- |
+| Deployed Worker | `HYPERDRIVE` binding in `wrangler.jsonc` | `db/client.ts` reads `env.HYPERDRIVE.connectionString` |
+| Local Worker (`pnpm run dev`) | `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` in `.env` | Wrangler fills the `HYPERDRIVE` binding with it |
+| drizzle-kit | `DATABASE_URL` in `.env` | `db:generate`, `db:migrate`, `db:studio` |
 
-1. Edit `db/client.ts` — swap to `drizzle-orm/node-postgres` + `pg.Pool`.
-2. Keep `nodejs_compat` in `wrangler.jsonc` (already on).
-3. For Hyperdrive: bind it in `wrangler.jsonc`, read `env.HYPERDRIVE.connectionString`.
-
-Schema and migrations don't change.
+Use Neon's **direct** (not pooled) URL everywhere. Hyperdrive does the pooling.
 
 ## Production migrations
 
-`bun run db:migrate` works against whatever `DATABASE_URL` is set in the shell. To apply to prod:
+`pnpm run db:migrate` works against whatever `DATABASE_URL` is set in the shell. To apply to prod:
 
 ```bash
-DATABASE_URL='postgresql://...prod...' bun run db:migrate
+DATABASE_URL='postgresql://...prod...' pnpm run db:migrate
 ```
 
 This is destructive scope — confirm with a human before running. `wrangler deploy` does **not** run migrations; you have to do it explicitly.

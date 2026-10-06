@@ -15,7 +15,7 @@ Browser → Cloudflare Worker (Hono)
 2. If path starts with `/api`, Hono routes it
 3. `/api/auth/*` is mounted to better-auth's handler — it owns sign-in, sign-up, sessions, JWT, password reset endpoints
 4. App routes (`/api/me`) call `requireRequestContext(c)` which:
-   - Constructs Drizzle client from `DATABASE_URL`
+   - Uses the Drizzle client that `src/worker/middleware/db.ts` opened for this request
    - Reads cookie session via `auth.api.getSession(headers)`
    - Falls back to `Authorization: Bearer <api_key>` if no cookie
    - Returns 401 if neither
@@ -46,13 +46,12 @@ Every profile has an `api_key` (UUID, unique). Pass as `Authorization: Bearer <u
 
 ## Database driver choice
 
-`@neondatabase/serverless` with the `drizzle-orm/neon-http` adapter:
+`pg` (node-postgres) with the `drizzle-orm/node-postgres` adapter, connected to Neon through Cloudflare Hyperdrive:
 
-- HTTP-based — no TCP socket lifecycle to manage in short-lived Worker isolates
-- Neon proxies pool connections server-side
-- One round-trip per query (no transaction state across statements)
-
-If you need multi-statement transactions, swap to `neon-serverless` (WebSocket mode) or `pg` Pool with Hyperdrive.
+- `src/worker/middleware/db.ts` opens one `pg` `Client` per request and closes it in `waitUntil` after the response
+- Hyperdrive keeps a warm connection pool near Neon, so a new `Client` per request is cheap
+- It is a real TCP Postgres connection, so transactions work (`db.transaction(...)`)
+- Local dev: Wrangler fills the `HYPERDRIVE` binding from `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
 
 ## Frontend state
 
@@ -71,10 +70,11 @@ QueryClientProvider
 | File                              | Purpose                                           |
 | --------------------------------- | ------------------------------------------------- |
 | `db/schema.ts`                    | Single source of truth for DB shape               |
-| `db/client.ts`                    | Drizzle factory — one `createDb(env)` per request |
+| `db/client.ts`                    | `createDbClient(env)` — pg Client + Drizzle       |
 | `src/lib/auth/server.ts`          | better-auth config + Drizzle adapter wiring       |
 | `src/lib/auth/client.ts`          | React `authClient` for browser                    |
-| `src/worker/context.ts`           | Server-side request auth + DB factory             |
+| `src/worker/middleware/db.ts`     | Per-request DB connection, sets `c.var.db`        |
+| `src/worker/context.ts`           | Server-side request auth                          |
 | `src/worker/hono.ts`              | API route table                                   |
 | `src/components/AuthProvider.tsx` | Reactive session context                          |
 | `src/lib/fetching/user.ts`        | Session + profile React Query options + mutations |

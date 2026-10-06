@@ -8,9 +8,9 @@ describe("createTitle", () => {
     expect(createTitle()).toEqual(CONTENT.appName);
   });
   it(`should return the correct title when a valid 'pageName' is provided`, () => {
-    expect(createTitle("signInTitle")).toEqual("Search — Otter");
+    expect(createTitle("signInTitle")).toEqual(`${CONTENT.signInTitle} — ${CONTENT.appName}`);
   });
   it(`should return the given value if it does not exist in the 'CONTENT' dictionary`, () => {
-    expect(createTitle("Zander")).toEqual("Zander — Otter");
+    expect(createTitle("Zander")).toEqual(`Zander — ${CONTENT.appName}`);
   });
 });

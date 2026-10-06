@@ -1,0 +1,49 @@
+name: Deploy to Cloudflare
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_package_age:
+        description: 'Bypass Aikido safe-chain minimum package age check'
+        type: boolean
+        default: false
+      skip_safe_chain:
+        description: 'Install without Aikido safe-chain (only when its service is down)'
+        type: boolean
+        default: false
+
+jobs:
+  Deploy-Production:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'latest'
+          cache: 'pnpm'
+      # Every install goes through safe-chain's policy check and proxy. When
+      # its service is down, run the workflow by hand with skip_safe_chain.
+      - name: Install safe-chain
+        if: ${{ !inputs.skip_safe_chain }}
+        run: curl -fsSL https://github.com/AikidoSec/safe-chain/releases/latest/download/install-safe-chain.sh | sh -s -- --ci
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile ${{ inputs.skip_package_age && !inputs.skip_safe_chain && '--safe-chain-skip-minimum-package-age' || '' }}
+      - name: Build site
+        run: pnpm build
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

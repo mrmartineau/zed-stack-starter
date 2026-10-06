@@ -1,0 +1,77 @@
+name: Preview
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to deploy a preview for'
+        type: number
+        required: true
+      skip_package_age:
+        description: 'Bypass Aikido safe-chain minimum package age check'
+        type: boolean
+        default: false
+      skip_safe_chain:
+        description: 'Install without Aikido safe-chain (only when its service is down)'
+        type: boolean
+        default: false
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  Deploy-Preview:
+    # Fork PRs get no secrets, so skip them.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # A manual run must not hand the Cloudflare secrets to fork code.
+      - name: Refuse fork PRs
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json isCrossRepository -q .isCrossRepository)" != "false" ]; then
+            echo "PR #$PR_NUMBER is from a fork or does not exist." && exit 1
+          fi
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/pull/{0}/head', inputs.pr_number) || '' }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'latest'
+          cache: 'pnpm'
+      # Every install goes through safe-chain's policy check and proxy. When
+      # its service is down, run the workflow by hand with skip_safe_chain.
+      - name: Install safe-chain
+        if: ${{ !inputs.skip_safe_chain }}
+        run: curl -fsSL https://github.com/AikidoSec/safe-chain/releases/latest/download/install-safe-chain.sh | sh -s -- --ci
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile ${{ inputs.skip_package_age && !inputs.skip_safe_chain && '--safe-chain-skip-minimum-package-age' || '' }}
+      - name: Build
+        run: pnpm build
+      # Uploads a new version without promoting it to production.
+      # Empty BETTER_AUTH_URL makes better-auth use the preview URL from the request.
+      - name: Upload preview version
+        id: preview
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: 'versions upload --preview-alias pr-${{ env.PR_NUMBER }} --var BETTER_AUTH_URL:'
+      - name: Comment preview URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.preview.outputs.deployment-alias-url || steps.preview.outputs.deployment-url }}
+        run: |
+          gh pr comment "$PR_NUMBER" --edit-last --create-if-none \
+            --body "🔍 Preview: ${URL:-see the Upload preview version step log} (commit $(git rev-parse HEAD))"

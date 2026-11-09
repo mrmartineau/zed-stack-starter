@@ -23,7 +23,7 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 
 ## Prerequisites
 
-- Node.js and [pnpm](https://pnpm.io/)
+- Node.js 22.22.2+, 24.15+ or 26+ (vitest and jsdom need these; `engines` in `package.json` has the exact range), and [pnpm](https://pnpm.io/)
 - A Postgres database — [Neon](https://neon.tech/) recommended (free tier works)
 - A [Cloudflare](https://cloudflare.com/) account (for deployment)
 
@@ -315,9 +315,14 @@ To run without Hyperdrive, remove the `hyperdrive` block from `wrangler.jsonc` a
 ### Create the Hyperdrive config
 
 ```bash
-pnpm exec wrangler hyperdrive create zed-stack-starter-db \
-  --connection-string="postgresql://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require"
+# Paste the connection string at the prompt. `read -s` keeps it off the
+# screen and out of your shell history.
+read -rs DB_URL
+pnpm exec wrangler hyperdrive create zed-stack-starter-db --connection-string="$DB_URL"
+unset DB_URL
 ```
+
+Or create it in the Cloudflare dashboard: **Storage & Databases → Hyperdrive**.
 
 Put the returned `id` in the `hyperdrive` block of `wrangler.jsonc`. The Worker reads the database through this binding, so it needs no `DATABASE_URL` secret.
 

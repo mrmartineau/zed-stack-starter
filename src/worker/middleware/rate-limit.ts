@@ -6,8 +6,9 @@ interface RateLimitEnv {
 }
 
 /**
- * Limits POSTs per IP with the `AUTH_RATE_LIMITER` binding (see
- * `wrangler.jsonc`). Stops password guessing and reset-email spam.
+ * Best-effort limit on POSTs per IP, with the `AUTH_RATE_LIMITER` binding
+ * (see `wrangler.jsonc`). Cloudflare counts per location, so this slows
+ * password guessing and reset-email spam but is not a hard global cap.
  * GETs (like the session check) pass through.
  */
 export const authRateLimit = createMiddleware<{ Bindings: RateLimitEnv }>(

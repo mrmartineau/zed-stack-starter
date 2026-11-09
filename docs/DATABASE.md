@@ -190,7 +190,7 @@ Neon: drop and recreate the branch (or use a new database) via the Neon console,
 
 The driver is plain `pg`, so any Postgres works (Neon, Supabase, RDS, local Docker):
 
-1. Create a Hyperdrive config for the new connection string: `pnpm exec wrangler hyperdrive create <name> --connection-string="postgresql://..."`.
+1. Create a Hyperdrive config for the new connection string, as in [SETUP.md](./SETUP.md#create-the-hyperdrive-config). Do not type the string into the command itself: it would stay in your shell history.
 2. Put the returned `id` in the `hyperdrive` block of `wrangler.jsonc`.
 3. Set the same string as `DATABASE_URL` and `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` in `.env`.
 
@@ -201,7 +201,10 @@ Schema and migrations don't change.
 `pnpm run db:migrate` works against whatever `DATABASE_URL` is set in the shell. To apply to prod:
 
 ```bash
-DATABASE_URL='postgresql://...prod...' pnpm run db:migrate
+# Paste the prod connection string at the prompt. It stays out of your shell history.
+read -rs PROD_DATABASE_URL
+DATABASE_URL="$PROD_DATABASE_URL" pnpm run db:migrate
+unset PROD_DATABASE_URL
 ```
 
 This is destructive scope — confirm with a human before running. `wrangler deploy` does **not** run migrations; you have to do it explicitly.

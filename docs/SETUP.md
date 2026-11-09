@@ -94,9 +94,14 @@ pnpm exec wrangler login
 ### Create the Hyperdrive config
 
 ```bash
-pnpm exec wrangler hyperdrive create zed-stack-starter-db \
-  --connection-string="postgresql://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require"
+# Paste the connection string at the prompt. `read -s` keeps it off the
+# screen and out of your shell history.
+read -rs DB_URL
+pnpm exec wrangler hyperdrive create zed-stack-starter-db --connection-string="$DB_URL"
+unset DB_URL
 ```
+
+Or create it in the Cloudflare dashboard: **Storage & Databases → Hyperdrive**.
 
 Put the returned `id` in the `hyperdrive` block of `wrangler.jsonc`. The Worker reads the database through this binding, so it needs no `DATABASE_URL` secret.
 

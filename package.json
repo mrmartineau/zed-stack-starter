@@ -40,6 +40,9 @@
     "vitest": "^5.1.0",
     "wrangler": "^4.157.0"
   },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
   "name": "zed-stack-starter",
   "packageManager": "pnpm@11.1.1",
   "private": true,

@@ -22,9 +22,7 @@
   /**
    * Hyperdrive
    * Setup guide (Neon): https://neon.com/docs/guides/cloudflare-workers
-   * Create the config:
-   *   npx wrangler hyperdrive create my-neon-hyperdrive-{app} \
-   *     --connection-string="postgres://USERNAME:PASSWORD@HOSTNAME:PORT/DATABASE"
+   * Create the config: see "Create the Hyperdrive config" in docs/SETUP.md.
    * Then replace the `id` below with the returned Hyperdrive id.
    */
   "hyperdrive": [
@@ -47,7 +45,10 @@
 
   /**
    * Rate limiting
-   * Limits POSTs to /api/auth/* (sign-in, sign-up, password reset) per IP.
+   * Best-effort limit on POSTs to /api/auth/* (sign-in, sign-up, password
+   * reset): about 10 a minute per IP, counted per Cloudflare location. It is
+   * not one global count, and it can let a few extra requests through. It
+   * slows password guessing and reset-email spam; it is not a hard cap.
    * namespace_id is any number, unique within your Cloudflare account.
    * https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
    */

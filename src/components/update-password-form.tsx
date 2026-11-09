@@ -12,23 +12,21 @@ import { useNavigate, useSearch } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
 import { ROUTE_APP_HOME } from '@/constants'
 import { authClient } from '@/lib/auth/client'
+import type { FormStatus } from '@/lib/form-status'
 
 /** Sets a new password from the `token` in the reset link. */
 export function UpdatePasswordForm() {
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState<FormStatus>({ kind: 'idle' })
   const navigate = useNavigate()
   const search = useSearch({ strict: false }) as { token?: string }
 
   const handleUpdatePassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    setStatus({ kind: 'saving' })
 
     if (!search.token) {
-      setError('Missing reset token')
-      setIsLoading(false)
+      setStatus({ kind: 'error', message: 'Missing reset token' })
       return
     }
 
@@ -38,13 +36,14 @@ export function UpdatePasswordForm() {
     })
 
     if (error) {
-      setError(error.message ?? 'Could not update password')
-      setIsLoading(false)
+      setStatus({
+        kind: 'error',
+        message: error.message ?? 'Could not update password',
+      })
       return
     }
 
     await navigate({ to: ROUTE_APP_HOME })
-    setIsLoading(false)
   }
 
   return (
@@ -70,13 +69,17 @@ export function UpdatePasswordForm() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
-          {error && (
+          {status.kind === 'error' && (
             <p className="form-error" role="alert">
-              {error}
+              {status.message}
             </p>
           )}
-          <Button type="submit" disabled={isLoading} style={{ width: '100%' }}>
-            {isLoading ? 'Saving...' : 'Save new password'}
+          <Button
+            type="submit"
+            disabled={status.kind === 'saving'}
+            style={{ width: '100%' }}
+          >
+            {status.kind === 'saving' ? 'Saving...' : 'Save new password'}
           </Button>
         </form>
       </CardBody>

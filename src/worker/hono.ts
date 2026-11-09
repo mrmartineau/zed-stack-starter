@@ -1,16 +1,28 @@
 import { Hono } from 'hono'
+import { secureHeaders } from 'hono/secure-headers'
 import { createAuth } from '@/lib/auth/server'
 import { errorResponse } from '@/lib/fetching/error-response'
 import type { WorkerEnv } from './env'
 import { dbMiddleware } from './middleware/db'
+import { authRateLimit } from './middleware/rate-limit'
 import { getCurrentProfile, updateCurrentProfile } from './profile'
 
 /** The Hono app for everything under `/api`. */
 export const app = new Hono<{ Bindings: WorkerEnv }>().basePath('/api')
 
+// First, so it runs for every route below. API responses depend on who is
+// asking, so no shared cache (browser, CDN) may keep them.
+app.use('*', secureHeaders(), async (c, next) => {
+  await next()
+  c.header('Cache-Control', 'private, no-store')
+})
+
 // Routes that do not touch the database — declared before dbMiddleware
 // so they skip the per-request Postgres connection.
 app.get('/', (c) => c.text('Z Stack API', 200))
+
+// Before dbMiddleware, so a blocked request never opens a connection.
+app.use('/auth/*', authRateLimit)
 
 app.use('*', dbMiddleware)
 

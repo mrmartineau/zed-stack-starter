@@ -12,18 +12,18 @@ import { Link } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
 import { ROUTE_SIGNIN, ROUTE_UPDATE_PASSWORD } from '@/constants'
 import { authClient } from '@/lib/auth/client'
+import type { FormStatus } from '@/lib/form-status'
+
+type Status = FormStatus | { kind: 'sent' }
 
 /** Form that sends a password reset email. */
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState<Status>({ kind: 'idle' })
 
   const handleForgotPassword = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    setStatus({ kind: 'saving' })
 
     const { error } = await authClient.requestPasswordReset({
       email,
@@ -31,16 +31,17 @@ export function ForgotPasswordForm() {
     })
 
     if (error) {
-      setError(error.message ?? 'Could not send reset email')
-      setIsLoading(false)
+      setStatus({
+        kind: 'error',
+        message: error.message ?? 'Could not send reset email',
+      })
       return
     }
 
-    setSuccess(true)
-    setIsLoading(false)
+    setStatus({ kind: 'sent' })
   }
 
-  if (success) {
+  if (status.kind === 'sent') {
     return (
       <Card>
         <CardHeader>
@@ -83,13 +84,17 @@ export function ForgotPasswordForm() {
               onChange={(event) => setEmail(event.target.value)}
             />
           </div>
-          {error && (
+          {status.kind === 'error' && (
             <p className="form-error" role="alert">
-              {error}
+              {status.message}
             </p>
           )}
-          <Button type="submit" disabled={isLoading} style={{ width: '100%' }}>
-            {isLoading ? 'Sending...' : 'Send reset email'}
+          <Button
+            type="submit"
+            disabled={status.kind === 'saving'}
+            style={{ width: '100%' }}
+          >
+            {status.kind === 'saving' ? 'Sending...' : 'Send reset email'}
           </Button>
           <div className="form-link">
             Already have an account?{' '}

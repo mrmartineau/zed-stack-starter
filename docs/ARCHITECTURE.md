@@ -15,7 +15,7 @@ Browser → Cloudflare Worker (Hono)
 2. If path starts with `/api`, Hono routes it
 3. `/api/auth/*` is mounted to better-auth's handler — it owns sign-in, sign-up, sessions, JWT, password reset endpoints
 4. App routes (`/api/me`) call `requireRequestContext(c)` which:
-   - Constructs Drizzle client from `DATABASE_URL`
+   - Uses the Drizzle client that `dbMiddleware` put on `c.var.db` (one `pg` connection per request, through Hyperdrive)
    - Reads cookie session via `auth.api.getSession(headers)`
    - Falls back to `Authorization: Bearer <api_key>` if no cookie
    - Returns 401 if neither
@@ -46,13 +46,14 @@ Every profile has an `api_key` (UUID, unique). Pass as `Authorization: Bearer <u
 
 ## Database driver choice
 
-`@neondatabase/serverless` with the `drizzle-orm/neon-http` adapter:
+`pg` (node-postgres) with the `drizzle-orm/node-postgres` adapter, connected through Cloudflare Hyperdrive:
 
-- HTTP-based — no TCP socket lifecycle to manage in short-lived Worker isolates
-- Neon proxies pool connections server-side
-- One round-trip per query (no transaction state across statements)
+- Hyperdrive pools connections near the database and keeps them warm, so a new connection per request is cheap.
+- It is a real Postgres connection, so multi-statement transactions (`db.transaction`) work.
+- A Worker cannot share an open socket between requests. `dbMiddleware` opens one `Client` per request and closes it in `waitUntil` after the response.
+- `pg` needs the `nodejs_compat` flag (already on).
 
-If you need multi-statement transactions, swap to `neon-serverless` (WebSocket mode) or `pg` Pool with Hyperdrive.
+With no `HYPERDRIVE` binding, `getDatabaseUrl` in `db/client.ts` falls back to `DATABASE_URL`. That works, but every request pays the full connection setup.
 
 ## Frontend state
 
@@ -63,7 +64,7 @@ QueryClientProvider
 ```
 
 - **Session** — `authClient.useSession()` is reactive; updates on sign-in/sign-out without manual invalidation
-- **Profile** — `getUserProfileOptions()` is a TanStack Query that fetches `/api/me`. Mutations use optimistic updates against the `['userProfile']` key
+- **Profile** — `getUserProfileOptions()` is a TanStack Query that fetches `/api/me`. Logout clears the whole query cache, so the next person on the tab sees none of it
 - **Protected routes** — `_authed/route.tsx` calls `getSession()` in `beforeLoad`, throws `redirect({to: '/login'})` if absent
 
 ## File ownership

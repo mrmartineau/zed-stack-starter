@@ -14,14 +14,14 @@ pnpm install
 
 1. Go to https://console.neon.tech/ and sign in
 2. Create a new project (any region — pick one close to your Cloudflare deploy)
-3. After creation, find **Connection string** → **Pooled connection**
+3. After creation, find **Connection string** and turn **Connection pooling** off. In production, Hyperdrive does the pooling. Local dev has no pooling and opens one connection per request.
 4. Copy the string. Format:
 
    ```
-   postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+   postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
    ```
 
-> Other Postgres options: Supabase (use the **Session pooler** string), Railway, Fly Postgres, RDS, local `docker run postgres`.
+> Other Postgres options: Supabase (use the **direct connection** string), Railway, Fly Postgres, RDS, local `docker run postgres`.
 
 ## 3. Generate auth secret
 
@@ -42,10 +42,13 @@ cp .env.example .env
 Fill in:
 
 ```env
-DATABASE_URL=postgresql://USER:PASS@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://USER:PASS@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
+CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://USER:PASS@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
 BETTER_AUTH_SECRET=<paste 64-char hex from step 3>
 BETTER_AUTH_URL=http://localhost:3450
 ```
+
+`DATABASE_URL` is for drizzle-kit. The Worker reads the second one in local dev, in place of the Hyperdrive binding.
 
 ## 5. Apply schema to DB
 
@@ -88,14 +91,28 @@ The `databaseHooks.user.create.after` callback in `src/lib/auth/server.ts` autom
 pnpm exec wrangler login
 ```
 
+### Create the Hyperdrive config
+
+```bash
+# Paste the connection string at the prompt. `read -s` keeps it off the
+# screen and out of your shell history. (bash or zsh; printf, not read -p,
+# because zsh's read -p means something else.)
+printf 'Connection string: '; read -rs DB_URL; printf '\n'
+pnpm exec wrangler hyperdrive create zed-stack-starter-db --connection-string="$DB_URL"
+unset DB_URL
+```
+
+Or create it in the Cloudflare dashboard: **Storage & Databases → Hyperdrive**.
+
+Put the returned `id` in the `hyperdrive` block of `wrangler.jsonc`. The Worker reads the database through this binding, so it needs no `DATABASE_URL` secret.
+
+Use a separate Neon branch or database for prod. Don't reuse dev.
+
 ### Set production secrets
 
 ```bash
-pnpm exec wrangler secret put DATABASE_URL
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 ```
-
-Paste your prod values when prompted. (Use a separate Neon branch/database for prod — don't reuse dev.)
 
 ### Update public URL
 
@@ -192,12 +209,12 @@ emailAndPassword: {
 
 ## Troubleshooting
 
-### `Missing DATABASE_URL`
+### `Missing database connection string`
 
-Worker can't read your secret. Either:
+The Worker found no Hyperdrive binding and no `DATABASE_URL`. Either:
 
-- Local: missing `.env` or wrong key name
-- Prod: didn't run `wrangler secret put DATABASE_URL`
+- Local: `.env` is missing `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
+- Prod: the `hyperdrive` block was removed from `wrangler.jsonc` and no `DATABASE_URL` secret is set
 
 ### `relation "user" does not exist`
 

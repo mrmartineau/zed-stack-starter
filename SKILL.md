@@ -158,14 +158,15 @@ const [widget] = await ctx.db
   .where(and(eq(widgets.id, id), eq(widgets.ownerId, ctx.user.id)))
 ```
 
-Outside a request, build a client and close it yourself:
+Outside a request (a script, a cron handler), nothing opens a connection for you. Wrap each query in a helper that connects and closes, like this:
 
 ```ts
 import { eq } from 'drizzle-orm'
 import { createDbClient, type DbEnv } from '../../db/client'
 import { profiles } from '../../db/schema'
 
-// The caller opens and closes the connection.
+// getProfile opens its own connection and always closes it. Callers do not
+// connect or close anything.
 export const getProfile = async (env: DbEnv, userId: string) => {
   const { client, db } = createDbClient(env)
   await client.connect()

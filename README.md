@@ -285,7 +285,8 @@ import { eq } from 'drizzle-orm'
 import { createDbClient, type DbEnv } from '../../db/client'
 import { profiles } from '../../db/schema'
 
-// The caller opens and closes the connection.
+// getProfile opens its own connection and always closes it. Callers do not
+// connect or close anything.
 export const getProfile = async (env: DbEnv, userId: string) => {
   const { client, db } = createDbClient(env)
   await client.connect()

@@ -1,44 +1,20 @@
-export const REPO_URL = "https://github.com/mrmartineau/zed-stack-starter";
+export const TITLE_SEPARATOR = ' — '
 
-export const ALLOW_SIGNUP = false;
-
-export const TITLE_SEPARATOR = " — ";
-
+/** UI copy, keyed by where it shows. */
 export const CONTENT = {
-  accountNav: "Account",
-  accountSettingsTitle: "Account, settings & integrations",
-  accountTitle: "Account",
-  appName: "Z Stack Starter",
-  noItems: "No items",
-  noNewerItems: "No newer items",
-  noOlderItems: "No older items",
-  olderBtn: "Older",
-  publicNav: "Public",
-  publicTitle: "Public",
-  scrapeThisUrl: "Scrape this URL",
-  searchInputPlaceholder: "Search",
-  searchTitle: "Search",
-  settingsNav: "Settings",
-  settingsTitle: "Settings",
-  signInTitle: "Sign in",
-  signOutNav: "Sign out",
-  signupTitle: "Register",
-} as const;
+  appName: 'Z Stack Starter',
+  signInTitle: 'Sign in',
+  signOutNav: 'Sign out',
+} as const
 
-// Page Routes
-export const ROUTE_HOME = "/";
-export const ROUTE_APP_HOME = "/app";
-export const ROUTE_SIGNIN = "/login";
-export const ROUTE_SIGNUP = "/sign-up";
+// Page routes
+export const ROUTE_HOME = '/'
+export const ROUTE_APP_HOME = '/app'
+export const ROUTE_SIGNIN = '/login'
+export const ROUTE_SIGNUP = '/sign-up'
+export const ROUTE_FORGOT_PASSWORD = '/forgot-password'
+export const ROUTE_UPDATE_PASSWORD = '/update-password'
 
-// API Routes
-export const API_AUTH = "/api/auth.json";
-export const API_SCRAPE = "/api/scrape";
-export const API_SEARCH = "/api/search";
-export const API_DEBUG = "/api/debug";
-
-export const API_HEADERS = {
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  "Access-Control-Allow-Origin": "*",
-  "Content-Type": "application/json",
-};
+// API routes
+export const API_ROOT = '/api'
+export const API_ME = '/api/me'

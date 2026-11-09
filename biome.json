@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
   "assist": {
     "actions": {
       "source": {
@@ -11,7 +11,14 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/dist", "!src/routeTree.gen.ts", "!src/types/supabase.ts"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!src/routeTree.gen.ts",
+      "!worker-configuration.d.ts",
+      "!drizzle",
+      "!public"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -30,7 +37,15 @@
     },
     "enabled": true,
     "rules": {
-      "recommended": true
+      "preset": "recommended",
+      "suspicious": {
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": ["warn", "error"]
+          }
+        }
+      }
     }
   },
   "vcs": {

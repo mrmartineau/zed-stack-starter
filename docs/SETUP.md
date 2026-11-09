@@ -7,7 +7,7 @@ Step-by-step setup for a fresh Z Stack Starter project. ~10 minutes.
 ```bash
 git clone <this-repo> my-app
 cd my-app
-bun install
+pnpm install
 ```
 
 ## 2. Provision Postgres (Neon)
@@ -16,6 +16,7 @@ bun install
 2. Create a new project (any region — pick one close to your Cloudflare deploy)
 3. After creation, find **Connection string** → **Pooled connection**
 4. Copy the string. Format:
+
    ```
    postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
    ```
@@ -49,7 +50,7 @@ BETTER_AUTH_URL=http://localhost:3450
 ## 5. Apply schema to DB
 
 ```bash
-bun run db:migrate
+pnpm run db:migrate
 ```
 
 This runs the SQL files in `drizzle/` against `DATABASE_URL`. You should see 6 tables created:
@@ -60,13 +61,13 @@ This runs the SQL files in `drizzle/` against `DATABASE_URL`. You should see 6 t
 Verify with Drizzle Studio:
 
 ```bash
-bun run db:studio
+pnpm run db:studio
 ```
 
 ## 6. Start dev server
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 Open http://localhost:3450.
@@ -84,14 +85,14 @@ The `databaseHooks.user.create.after` callback in `src/lib/auth/server.ts` autom
 ### Authenticate
 
 ```bash
-bunx wrangler login
+pnpm exec wrangler login
 ```
 
 ### Set production secrets
 
 ```bash
-bunx wrangler secret put DATABASE_URL
-bunx wrangler secret put BETTER_AUTH_SECRET
+pnpm exec wrangler secret put DATABASE_URL
+pnpm exec wrangler secret put BETTER_AUTH_SECRET
 ```
 
 Paste your prod values when prompted. (Use a separate Neon branch/database for prod — don't reuse dev.)
@@ -111,7 +112,7 @@ Or set per-environment using `[env.production]` blocks.
 ### Deploy
 
 ```bash
-bun run deploy
+pnpm run deploy
 ```
 
 Wrangler builds + uploads the Worker + assets. Visit the printed URL.
@@ -128,9 +129,9 @@ Wrangler builds + uploads the Worker + assets. Visit the printed URL.
 ### Add a new column
 
 1. Edit `db/schema.ts`
-2. `bun run db:generate`
+2. `pnpm run db:generate`
 3. Inspect the new file in `drizzle/`
-4. `bun run db:migrate`
+4. `pnpm run db:migrate`
 
 ### Disable signups
 
@@ -153,7 +154,7 @@ betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET!,
     },
   },
-});
+})
 ```
 
 Set the secrets via `wrangler secret put`. Add the OAuth callback `https://your-app/api/auth/callback/github` to the GitHub OAuth app config.
@@ -200,7 +201,7 @@ Worker can't read your secret. Either:
 
 ### `relation "user" does not exist`
 
-You skipped `bun run db:migrate`.
+You skipped `pnpm run db:migrate`.
 
 ### `Invalid origin` when signing in
 
@@ -217,5 +218,5 @@ Check `wrangler.jsonc` has `"compatibility_flags": ["nodejs_compat"]`.
 ### Type errors after editing wrangler.jsonc
 
 ```bash
-bun run cf-typegen
+pnpm run cf-typegen
 ```

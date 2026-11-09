@@ -1,7 +1,7 @@
-import { compare, hash } from "bcryptjs";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { betterAuth } from "better-auth/minimal";
-import type { Db, DbEnv } from "../../../db/client";
+import { compare, hash } from 'bcryptjs'
+import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { betterAuth } from 'better-auth/minimal'
+import type { Db, DbEnv } from '../../../db/client'
 import {
   authAccounts,
   authJwks,
@@ -9,41 +9,44 @@ import {
   authUsers,
   authVerifications,
   profiles,
-} from "../../../db/schema";
+} from '../../../db/schema'
 
+/** Env vars better-auth reads. */
 export type AuthEnv = DbEnv & {
-  BETTER_AUTH_SECRET?: string;
-  BETTER_AUTH_URL?: string;
-  BETTER_AUTH_TRUSTED_ORIGINS?: string;
-  BETTER_AUTH_DISABLE_SIGNUP?: string;
-};
+  BETTER_AUTH_SECRET?: string
+  BETTER_AUTH_URL?: string
+  BETTER_AUTH_TRUSTED_ORIGINS?: string
+  BETTER_AUTH_DISABLE_SIGNUP?: string
+}
 
 const getTrustedOrigins = (env: AuthEnv) => {
-  const origins = env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",")
+  const origins = env.BETTER_AUTH_TRUSTED_ORIGINS?.split(',')
     .map((origin) => origin.trim())
-    .filter(Boolean);
+    .filter(Boolean)
 
   if (origins?.length) {
-    return origins;
+    return origins
   }
 
-  return env.BETTER_AUTH_URL ? [env.BETTER_AUTH_URL] : undefined;
-};
+  return env.BETTER_AUTH_URL ? [env.BETTER_AUTH_URL] : undefined
+}
 
-const isSignUpDisabled = (env: AuthEnv) => env.BETTER_AUTH_DISABLE_SIGNUP === "true";
+const isSignUpDisabled = (env: AuthEnv) =>
+  env.BETTER_AUTH_DISABLE_SIGNUP === 'true'
 
+/** A better-auth instance for one request. Also creates a profile row for each new user. */
 export const createAuth = (env: AuthEnv, db: Db) => {
   return betterAuth({
     advanced: {
       database: {
-        generateId: "uuid",
+        generateId: 'uuid',
       },
       trustedProxyHeaders: true,
     },
-    basePath: "/api/auth",
+    basePath: '/api/auth',
     baseURL: env.BETTER_AUTH_URL,
     database: drizzleAdapter(db, {
-      provider: "pg",
+      provider: 'pg',
       schema: {
         account: authAccounts,
         jwks: authJwks,
@@ -62,7 +65,7 @@ export const createAuth = (env: AuthEnv, db: Db) => {
                 id: user.id,
                 username: user.email,
               })
-              .onConflictDoNothing();
+              .onConflictDoNothing()
           },
         },
       },
@@ -77,5 +80,5 @@ export const createAuth = (env: AuthEnv, db: Db) => {
     },
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: getTrustedOrigins(env),
-  });
-};
+  })
+}

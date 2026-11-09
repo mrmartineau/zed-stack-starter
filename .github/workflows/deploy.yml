@@ -11,11 +11,11 @@ on:
   workflow_dispatch:
     inputs:
       skip_package_age:
-        description: 'Bypass Aikido safe-chain minimum package age check'
+        description: "Bypass Aikido safe-chain minimum package age check"
         type: boolean
         default: false
       skip_safe_chain:
-        description: 'Install without Aikido safe-chain (only when its service is down)'
+        description: "Install without Aikido safe-chain (only when its service is down)"
         type: boolean
         default: false
 
@@ -30,8 +30,8 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 'latest'
-          cache: 'pnpm'
+          node-version: "latest"
+          cache: "pnpm"
       # Every install goes through safe-chain's policy check and proxy. When
       # its service is down, run the workflow by hand with skip_safe_chain.
       - name: Install safe-chain

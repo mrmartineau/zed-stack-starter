@@ -32,7 +32,7 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 ### 1. Install
 
 ```bash
-bun install
+pnpm install
 ```
 
 ### 2. Provision Postgres
@@ -64,7 +64,7 @@ openssl rand -hex 32
 ### 4. Run migrations
 
 ```bash
-bun run db:migrate
+pnpm run db:migrate
 ```
 
 This applies the SQL files in `drizzle/` to your database. Tables created: `user`, `session`, `account`, `verification`, `jwks`, `profiles`.
@@ -72,7 +72,7 @@ This applies the SQL files in `drizzle/` to your database. Tables created: `user
 ### 5. Start dev server
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 App runs at http://localhost:3450 (proxied as `[ras.localhost](http://ras.localhost:1355)` via [portless](https://github.com/sidwebworks/portless)).
@@ -120,18 +120,18 @@ Quick recipes for the most common things you'll want to add. Agents: see [`AGENT
 
 ### Add a route
 
-Routes are file-based via [TanStack Router](https://tanstack.com/router). Drop a file into `src/routes` and the route tree (`src/routeTree.gen.ts`) regenerates automatically while `bun run dev` is running.
+Routes are file-based via [TanStack Router](https://tanstack.com/router). Drop a file into `src/routes` and the route tree (`src/routeTree.gen.ts`) regenerates automatically while `pnpm run dev` is running.
 
 ```tsx
 // src/routes/about.tsx
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/about")({
+export const Route = createFileRoute('/about')({
   component: About,
-});
+})
 
 function About() {
-  return <h1>About</h1>;
+  return <h1>About</h1>
 }
 ```
 
@@ -148,10 +148,10 @@ To add a protected page, create `src/routes/_authed/app/billing.tsx` and it's li
 Use `Link` from `@tanstack/react-router` for SPA navigation. Prefer route constants from `src/constants.ts` rather than hard-coding paths:
 
 ```tsx
-import { Link } from "@tanstack/react-router";
-import { ROUTE_APP_HOME } from "@/constants";
+import { Link } from '@tanstack/react-router'
+import { ROUTE_APP_HOME } from '@/constants'
 
-<Link to={ROUTE_APP_HOME}>App</Link>;
+;<Link to={ROUTE_APP_HOME}>App</Link>
 ```
 
 When you add a new top-level route, add a matching `ROUTE_*` constant so links stay refactor-safe.
@@ -167,15 +167,18 @@ For section-level layouts (e.g. an authed sidebar), edit `src/routes/_authed/rou
 Hono is mounted at `/api`. Edit `src/worker/hono.ts`:
 
 ```ts
-import { requireRequestContext } from "./context";
+import { requireRequestContext } from './context'
 
-app.get("/widgets", async (c) => {
-  const ctx = await requireRequestContext(c);
-  if (ctx instanceof Response) return ctx; // 401
-  const { db, user } = ctx;
-  const rows = await db.select().from(widgets).where(eq(widgets.ownerId, user.id));
-  return c.json(rows);
-});
+app.get('/widgets', async (c) => {
+  const ctx = await requireRequestContext(c)
+  if (ctx instanceof Response) return ctx // 401
+  const { db, user } = ctx
+  const rows = await db
+    .select()
+    .from(widgets)
+    .where(eq(widgets.ownerId, user.id))
+  return c.json(rows)
+})
 ```
 
 `requireRequestContext(c)` returns either `{db, user, profile}` or a 401 `Response`. Use `createRequestContext(c)` instead if the route is optionally authenticated.
@@ -185,25 +188,31 @@ For anything bigger than a couple of handlers, extract to its own file in `src/w
 ### Add a database table
 
 1. Edit `db/schema.ts` — add the table with Drizzle's `pgTable`.
-2. `bun run db:generate` — emits a new SQL file in `drizzle/`.
+2. `pnpm run db:generate` — emits a new SQL file in `drizzle/`.
 3. Commit the SQL.
-4. `bun run db:migrate` — applies it to whatever `DATABASE_URL` points at.
+4. `pnpm run db:migrate` — applies it to whatever `DATABASE_URL` points at.
 
-Re-run `bun run cf-typegen` only if you change `wrangler.jsonc` bindings — schema changes don't need it.
+Re-run `pnpm run cf-typegen` only if you change `wrangler.jsonc` bindings — schema changes don't need it.
 
 ### Add data fetching with TanStack Query
 
 The QueryClient is already provided in `src/main.tsx`. Use `useQuery` directly in a component, or call it from inside a route loader to prefetch.
 
 ```tsx
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query'
 
 function Widgets() {
   const { data } = useQuery({
-    queryKey: ["widgets"],
-    queryFn: () => fetch("/api/widgets").then((r) => r.json()),
-  });
-  return <ul>{data?.map((w) => <li key={w.id}>{w.name}</li>)}</ul>;
+    queryKey: ['widgets'],
+    queryFn: () => fetch('/api/widgets').then((r) => r.json()),
+  })
+  return (
+    <ul>
+      {data?.map((w) => (
+        <li key={w.id}>{w.name}</li>
+      ))}
+    </ul>
+  )
 }
 ```
 
@@ -216,9 +225,9 @@ Plain React components live in `src/components/`. UI primitives come from [ZUI](
 ### Add an environment variable
 
 1. Add to `.env` for local dev.
-2. Add to `wrangler.jsonc` `vars` (non-secret) or `bunx wrangler secret put NAME` (secret).
+2. Add to `wrangler.jsonc` `vars` (non-secret) or `pnpm exec wrangler secret put NAME` (secret).
 3. Add to `WorkerEnv` in `src/worker/env.ts` so it's typed inside Hono handlers.
-4. Run `bun run cf-typegen` to refresh `worker-configuration.d.ts`.
+4. Run `pnpm run cf-typegen` to refresh `worker-configuration.d.ts`.
 
 ## Auth Flow
 
@@ -264,20 +273,23 @@ Drizzle ORM with Neon HTTP driver — designed for Workers' edge runtime. Full g
 ### Editing schema
 
 1. Edit `db/schema.ts`
-2. `bun run db:generate` → emits SQL in `drizzle/`
+2. `pnpm run db:generate` → emits SQL in `drizzle/`
 3. Inspect the SQL — stop if it drops or renames anything you didn't intend
 4. Commit `db/schema.ts` + the SQL + `drizzle/meta/` together
-5. `bun run db:migrate` → applies to your DB
+5. `pnpm run db:migrate` → applies to your DB
 
 ### Querying
 
 ```ts
-import { eq } from "drizzle-orm";
-import { createDb } from "../../db/client";
-import { profiles } from "../../db/schema";
+import { eq } from 'drizzle-orm'
+import { createDb } from '../../db/client'
+import { profiles } from '../../db/schema'
 
-const db = createDb(env);
-const [profile] = await db.select().from(profiles).where(eq(profiles.id, userId));
+const db = createDb(env)
+const [profile] = await db
+  .select()
+  .from(profiles)
+  .where(eq(profiles.id, userId))
 ```
 
 ### Switching databases
@@ -292,8 +304,8 @@ The `@neondatabase/serverless` driver speaks Postgres wire protocol over HTTP. T
 ### Set secrets
 
 ```bash
-bunx wrangler secret put DATABASE_URL
-bunx wrangler secret put BETTER_AUTH_SECRET
+pnpm exec wrangler secret put DATABASE_URL
+pnpm exec wrangler secret put BETTER_AUTH_SECRET
 ```
 
 Update `BETTER_AUTH_URL` in `wrangler.jsonc` `vars` to your production URL.
@@ -301,10 +313,10 @@ Update `BETTER_AUTH_URL` in `wrangler.jsonc` `vars` to your production URL.
 ### Deploy
 
 ```bash
-bun run deploy
+pnpm run deploy
 ```
 
-Authenticate first if needed: `bunx wrangler login`.
+Authenticate first if needed: `pnpm exec wrangler login`.
 
 ### Wrangler config
 
@@ -319,18 +331,18 @@ Authenticate first if needed: `bunx wrangler login`.
 
 | Script                | What it does                            |
 | --------------------- | --------------------------------------- |
-| `bun run dev`         | Start dev server on port 3450           |
-| `bun run build`       | Vite build + tsc                        |
-| `bun run preview`     | Preview production build                |
-| `bun run deploy`      | Build + `wrangler deploy`               |
-| `bun run db:generate` | Generate Drizzle migrations from schema |
-| `bun run db:migrate`  | Apply migrations to DATABASE_URL        |
-| `bun run db:studio`   | Open Drizzle Studio                     |
-| `bun run test`        | Run Vitest                              |
-| `bun run type-check`  | TypeScript check                        |
-| `bun run cf-typegen`  | Regenerate `worker-configuration.d.ts`  |
-| `bun run check`       | Biome check + autofix                   |
-| `bun run format`      | Biome format                            |
+| `pnpm run dev`         | Start dev server on port 3450           |
+| `pnpm run build`       | Vite build + tsc                        |
+| `pnpm run preview`     | Preview production build                |
+| `pnpm run deploy`      | Build + `wrangler deploy`               |
+| `pnpm run db:generate` | Generate Drizzle migrations from schema |
+| `pnpm run db:migrate`  | Apply migrations to DATABASE_URL        |
+| `pnpm run db:studio`   | Open Drizzle Studio                     |
+| `pnpm run test`        | Run Vitest                              |
+| `pnpm run type-check`  | TypeScript check                        |
+| `pnpm run cf-typegen`  | Regenerate `worker-configuration.d.ts`  |
+| `pnpm run check`       | Biome check + autofix                   |
+| `pnpm run format`      | Biome format                            |
 
 ## Styling
 

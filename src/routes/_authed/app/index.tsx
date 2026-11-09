@@ -1,27 +1,31 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { getUserProfileOptions } from "@/lib/fetching/user";
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { API_ROOT } from '@/constants'
+import { getUserProfileOptions } from '@/lib/fetching/user'
 
-export const Route = createFileRoute("/_authed/app/")({
+export const Route = createFileRoute('/_authed/app/')({
   component: RouteComponent,
-});
+})
+
+const getApiStatus = async ({ signal }: { signal?: AbortSignal }) => {
+  const response = await fetch(API_ROOT, { signal })
+  if (!response.ok) throw new Error('Could not reach the API')
+  return response.text()
+}
 
 function RouteComponent() {
-  const { data: debug } = useQuery({
-    queryFn: async () => {
-      const res = await fetch("/api");
-      if (!res.ok) throw new Error("Failed to fetch debug info");
-      return (await res.text()) as string;
-    },
-    queryKey: ["debug"],
-  });
+  const apiStatus = useQuery({ queryFn: getApiStatus, queryKey: ['apiStatus'] })
+  const profile = useQuery(getUserProfileOptions())
 
-  const { data: user } = useQuery(getUserProfileOptions());
+  if (profile.status === 'pending') return <p>Loading…</p>
+  if (profile.status === 'error') {
+    return <p role="alert">{profile.error.message}</p>
+  }
 
   return (
     <>
-      <p>Hello {user?.data?.username}</p>
-      <p>Debug: {debug}</p>
+      <p>Hello {profile.data.data.username}</p>
+      <p>API: {apiStatus.data ?? apiStatus.error?.message ?? '…'}</p>
     </>
-  );
+  )
 }

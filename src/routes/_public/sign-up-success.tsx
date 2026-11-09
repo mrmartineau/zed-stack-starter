@@ -1,9 +1,15 @@
-import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@mrmartineau/zui/react";
-import { createFileRoute } from "@tanstack/react-router";
+import {
+  Card,
+  CardBody,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@mrmartineau/zui/react'
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/_public/sign-up-success")({
+export const Route = createFileRoute('/_public/sign-up-success')({
   component: SignUpSuccess,
-});
+})
 
 function SignUpSuccess() {
   return (
@@ -16,12 +22,12 @@ function SignUpSuccess() {
           </CardHeader>
           <CardBody>
             <p>
-              You&apos;ve successfully signed up. Please check your email to confirm your account
-              before signing in.
+              You&apos;ve successfully signed up. Please check your email to
+              confirm your account before signing in.
             </p>
           </CardBody>
         </Card>
       </div>
     </div>
-  );
+  )
 }

@@ -18,7 +18,6 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-error-boundary": "^6.1.6",
-    "url-merge": "^0.2.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -39,7 +38,6 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.1.0",
-    "web-vitals": "^6.2.3",
     "wrangler": "^4.157.0"
   },
   "name": "zed-stack-starter",
@@ -52,7 +50,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "pnpm run build && wrangler deploy",
     "dev": "portless ras vite",
     "format": "biome format --write .",
     "preview": "vite preview",

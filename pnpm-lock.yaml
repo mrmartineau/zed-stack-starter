@@ -62,9 +62,6 @@ importers:
       react-error-boundary:
         specifier: ^6.1.6
         version: 6.1.6(@types/react@19.3.0)(react@19.3.1)
-      url-merge:
-        specifier: ^0.2.0
-        version: 0.2.0
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -120,9 +117,6 @@ importers:
       vitest:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-      web-vitals:
-        specifier: ^6.2.3
-        version: 6.2.3
       wrangler:
         specifier: ^4.157.0
         version: 4.157.0(@cloudflare/workers-types@5.20261104.1)(@types/node@26.6.6)
@@ -2774,9 +2768,6 @@ packages:
     peerDependencies:
       browserslist: '>= 4.21.0'
 
-  url-merge@0.2.0:
-    resolution: {integrity: sha512-EHuHwOEI6eR03cIw+wqnxxHsYLAzPcdmzEE31GTFlaKU4/4PGB0azo91wbqIvkErZEyFj3jOkf//EiU54lsPSg==}
-
   use-sync-external-store@1.7.0:
     resolution: {integrity: sha512-6L+EeigHMQhdaIPNIFUKwfWJSwWFQ8gJbJ2DLOs5sDIegTwR9fRxvnM3uciHKjIZhFz+KAv2emhWMRvDmMcY8A==}
     peerDependencies:
@@ -2869,9 +2860,6 @@ packages:
   w3c-xmlserializer@6.0.0:
     resolution: {integrity: sha512-4Nsy8K5Tr6SPDH9jhKJOHf7ChDrc1zufZTVSF7x72hwuEXBqxqk9G6cK+K2NRUtB3iELRJqjXb4JPDMBjMTl2Q==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
-
-  web-vitals@6.2.3:
-    resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
 
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
@@ -5059,8 +5047,6 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  url-merge@0.2.0: {}
-
   use-sync-external-store@1.7.0(react@19.3.1):
     dependencies:
       react: 19.3.1
@@ -5104,8 +5090,6 @@ snapshots:
   w3c-xmlserializer@6.0.0:
     dependencies:
       xml-name-validator: 5.0.0
-
-  web-vitals@6.2.3: {}
 
   webidl-conversions@8.0.1: {}
 

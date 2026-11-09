@@ -202,7 +202,7 @@ Schema and migrations don't change.
 
 ```bash
 # Paste the prod connection string at the prompt. It stays out of your shell history.
-read -rs PROD_DATABASE_URL
+printf 'Production connection string: '; read -rs PROD_DATABASE_URL; printf '\n'
 DATABASE_URL="$PROD_DATABASE_URL" pnpm run db:migrate
 unset PROD_DATABASE_URL
 ```

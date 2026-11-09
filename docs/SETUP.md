@@ -95,8 +95,9 @@ pnpm exec wrangler login
 
 ```bash
 # Paste the connection string at the prompt. `read -s` keeps it off the
-# screen and out of your shell history.
-read -rs DB_URL
+# screen and out of your shell history. (bash or zsh; printf, not read -p,
+# because zsh's read -p means something else.)
+printf 'Connection string: '; read -rs DB_URL; printf '\n'
 pnpm exec wrangler hyperdrive create zed-stack-starter-db --connection-string="$DB_URL"
 unset DB_URL
 ```

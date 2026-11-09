@@ -2,7 +2,7 @@ name: Security
 
 on:
   push:
-    branches: ['**']
+    branches: ["**"]
 
 jobs:
   safe-chain:
@@ -16,8 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'latest'
-          cache: 'pnpm'
+          node-version: "latest"
+          cache: "pnpm"
       - name: Install safe-chain
         run: curl -fsSL https://github.com/AikidoSec/safe-chain/releases/latest/download/install-safe-chain.sh | sh -s -- --ci
       - name: Install dependencies

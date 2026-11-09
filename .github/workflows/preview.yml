@@ -5,15 +5,15 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to deploy a preview for'
+        description: "PR number to deploy a preview for"
         type: number
         required: true
       skip_package_age:
-        description: 'Bypass Aikido safe-chain minimum package age check'
+        description: "Bypass Aikido safe-chain minimum package age check"
         type: boolean
         default: false
       skip_safe_chain:
-        description: 'Install without Aikido safe-chain (only when its service is down)'
+        description: "Install without Aikido safe-chain (only when its service is down)"
         type: boolean
         default: false
 
@@ -48,8 +48,8 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 'latest'
-          cache: 'pnpm'
+          node-version: "latest"
+          cache: "pnpm"
       # Every install goes through safe-chain's policy check and proxy. When
       # its service is down, run the workflow by hand with skip_safe_chain.
       - name: Install safe-chain
@@ -67,7 +67,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: 'versions upload --preview-alias pr-${{ env.PR_NUMBER }} --var BETTER_AUTH_URL:'
+          command: "versions upload --preview-alias pr-${{ env.PR_NUMBER }} --var BETTER_AUTH_URL:"
       - name: Comment preview URL
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,13 +1,14 @@
-import type { AuthEnv } from "@/lib/auth/server";
-import type { HyperdriveBinding } from "../../db/client";
+import type { AuthEnv } from '@/lib/auth/server'
+import type { HyperdriveBinding } from '../../db/client'
 
-type AssetBinding = {
-  fetch: (request: Request) => Promise<Response>;
-};
+interface AssetBinding {
+  fetch: (request: Request) => Promise<Response>
+}
 
+/** Every binding and env var the worker reads. */
 export type WorkerEnv = Cloudflare.Env &
   AuthEnv & {
-    ASSETS?: AssetBinding;
-    DATABASE_URL?: string;
-    HYPERDRIVE?: HyperdriveBinding;
-  };
+    ASSETS?: AssetBinding
+    DATABASE_URL?: string
+    HYPERDRIVE?: HyperdriveBinding
+  }

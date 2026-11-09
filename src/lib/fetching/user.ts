@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { API_ME } from '@/constants'
 import { authClient } from '@/lib/auth/client'
-import type { UserProfile } from '@/types/db'
+import type { UserProfile } from '@/worker/context'
 
 /** The better-auth session, or `null` when signed out. */
 export const getSession = async () => {

@@ -64,7 +64,7 @@ QueryClientProvider
 ```
 
 - **Session** — `authClient.useSession()` is reactive; updates on sign-in/sign-out without manual invalidation
-- **Profile** — `getUserProfileOptions()` is a TanStack Query that fetches `/api/me`. Mutations use optimistic updates against the `['userProfile']` key
+- **Profile** — `getUserProfileOptions()` is a TanStack Query that fetches `/api/me`. Logout clears the whole query cache, so the next person on the tab sees none of it
 - **Protected routes** — `_authed/route.tsx` calls `getSession()` in `beforeLoad`, throws `redirect({to: '/login'})` if absent
 
 ## File ownership

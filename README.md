@@ -4,22 +4,22 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 
 ## Tech Stack
 
-| Category                 | Technology                                                                             |
-| ------------------------ | -------------------------------------------------------------------------------------- |
-| **Framework**            | [React 19](https://react.dev/)                                                         |
-| **Routing**              | [TanStack Router](https://tanstack.com/router)                                         |
-| **Data Fetching**        | [TanStack Query](https://tanstack.com/query)                                           |
-| **Auth**                 | [better-auth](https://www.better-auth.com/)                                            |
-| **Database**             | Any Postgres (default: [Neon](https://neon.tech/))                                     |
-| **ORM**                  | [Drizzle ORM](https://orm.drizzle.team/)                                               |
+| Category                 | Technology                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| **Framework**            | [React 19](https://react.dev/)                                                                                  |
+| **Routing**              | [TanStack Router](https://tanstack.com/router)                                                                  |
+| **Data Fetching**        | [TanStack Query](https://tanstack.com/query)                                                                    |
+| **Auth**                 | [better-auth](https://www.better-auth.com/)                                                                     |
+| **Database**             | Any Postgres (default: [Neon](https://neon.tech/))                                                              |
+| **ORM**                  | [Drizzle ORM](https://orm.drizzle.team/)                                                                        |
 | **DB Driver**            | [pg](https://node-postgres.com/) through [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/) |
-| **API Server**           | [Hono](https://hono.dev/)                                                              |
-| **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/)                                  |
-| **UI Library**           | [ZUI](https://github.com/mrmartineau/zui) (CSS-first)                                  |
-| **Icons**                | [Phosphor Icons](https://phosphoricons.com/)                                           |
-| **Validation**           | [Zod](https://zod.dev/)                                                                |
-| **Linting & Formatting** | [Biome](https://biomejs.dev/)                                                          |
-| **Testing**              | [Vitest](https://vitest.dev/)                                                          |
+| **API Server**           | [Hono](https://hono.dev/)                                                                                       |
+| **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/)                                                           |
+| **UI Library**           | [ZUI](https://github.com/mrmartineau/zui) (CSS-first)                                                           |
+| **Icons**                | [Phosphor Icons](https://phosphoricons.com/)                                                                    |
+| **Validation**           | [Zod](https://zod.dev/)                                                                                         |
+| **Linting & Formatting** | [Biome](https://biomejs.dev/)                                                                                   |
+| **Testing**              | [Vitest](https://vitest.dev/)                                                                                   |
 
 ## Prerequisites
 
@@ -111,7 +111,6 @@ src/
 │   ├── context.ts      # request context (session + DB)
 │   ├── middleware/db.ts # opens one DB connection per request
 │   └── profile.ts      # /api/me endpoints
-├── types/db.ts
 ├── constants.ts
 ├── main.tsx
 └── styles.css           # imports @mrmartineau/zui/css
@@ -376,14 +375,14 @@ Components are plain elements with `zui-*` classes (`zui-button`, `zui-card`, `z
 
 ## Configuration knobs
 
-| Env var                       | Purpose                                        |
-| ----------------------------- | ---------------------------------------------- |
-| `DATABASE_URL`                | Postgres connection string for drizzle-kit; the Worker's fallback when no Hyperdrive is bound |
-| `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` | Connection string the `HYPERDRIVE` binding uses in local dev |
-| `BETTER_AUTH_SECRET`          | 32+ char random hex; signs sessions            |
-| `BETTER_AUTH_URL`             | Public origin (cookies + redirect URLs)        |
-| `BETTER_AUTH_TRUSTED_ORIGINS` | Comma-separated. Defaults to `BETTER_AUTH_URL` |
-| `BETTER_AUTH_DISABLE_SIGNUP`  | `true` to lock out new sign-ups                |
+| Env var                                                    | Purpose                                                                                       |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                             | Postgres connection string for drizzle-kit; the Worker's fallback when no Hyperdrive is bound |
+| `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` | Connection string the `HYPERDRIVE` binding uses in local dev                                  |
+| `BETTER_AUTH_SECRET`                                       | 32+ char random hex; signs sessions                                                           |
+| `BETTER_AUTH_URL`                                          | Public origin (cookies + redirect URLs)                                                       |
+| `BETTER_AUTH_TRUSTED_ORIGINS`                              | Comma-separated. Defaults to `BETTER_AUTH_URL`                                                |
+| `BETTER_AUTH_DISABLE_SIGNUP`                               | `true` to lock out new sign-ups                                                               |
 
 ## License
 

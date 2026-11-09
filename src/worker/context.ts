@@ -2,7 +2,6 @@ import { eq } from 'drizzle-orm'
 import type { Context } from 'hono'
 import { createAuth } from '@/lib/auth/server'
 import { errorResponse } from '@/lib/fetching/error-response'
-import type { UserProfile } from '@/types/db'
 import type { Db } from '../../db/client'
 import { profiles } from '../../db/schema'
 import type { WorkerEnv } from './env'
@@ -31,13 +30,16 @@ const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 /** Maps a `profiles` row to the snake_case shape the API sends. */
-export const profileToRow = (profile: Profile): UserProfile => ({
+export const profileToRow = (profile: Profile) => ({
   api_key: profile.apiKey,
   avatar_url: profile.avatarUrl,
   id: profile.id,
   updated_at: profile.updatedAt?.toISOString() ?? null,
   username: profile.username,
 })
+
+/** A profile as the API sends it (snake_case). Derived from `profileToRow`, so the two cannot drift. */
+export type UserProfile = ReturnType<typeof profileToRow>
 
 const getBearerToken = (request: Context['req']) => {
   const authHeader = request.header('Authorization')

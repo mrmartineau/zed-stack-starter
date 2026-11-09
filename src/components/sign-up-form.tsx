@@ -12,6 +12,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
 import { ROUTE_APP_HOME, ROUTE_SIGNIN } from '@/constants'
 import { authClient } from '@/lib/auth/client'
+import type { FormStatus } from '@/lib/form-status'
 
 /** Sign-up form. Checks the two passwords match before it sends. */
 export function SignUpForm() {
@@ -19,19 +20,16 @@ export function SignUpForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState<FormStatus>({ kind: 'idle' })
   const navigate = useNavigate()
 
   const handleSignUp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setError(null)
-
     if (password !== repeatPassword) {
-      setError('Passwords do not match')
+      setStatus({ kind: 'error', message: 'Passwords do not match' })
       return
     }
-    setIsLoading(true)
+    setStatus({ kind: 'saving' })
 
     const { error } = await authClient.signUp.email({
       email,
@@ -40,13 +38,14 @@ export function SignUpForm() {
     })
 
     if (error) {
-      setError(error.message ?? 'Could not sign up')
-      setIsLoading(false)
+      setStatus({
+        kind: 'error',
+        message: error.message ?? 'Could not sign up',
+      })
       return
     }
 
     await navigate({ to: ROUTE_APP_HOME })
-    setIsLoading(false)
   }
 
   return (
@@ -102,13 +101,17 @@ export function SignUpForm() {
               onChange={(event) => setRepeatPassword(event.target.value)}
             />
           </div>
-          {error && (
+          {status.kind === 'error' && (
             <p className="form-error" role="alert">
-              {error}
+              {status.message}
             </p>
           )}
-          <Button type="submit" disabled={isLoading} style={{ width: '100%' }}>
-            {isLoading ? 'Creating an account...' : 'Sign up'}
+          <Button
+            type="submit"
+            disabled={status.kind === 'saving'}
+            style={{ width: '100%' }}
+          >
+            {status.kind === 'saving' ? 'Creating an account...' : 'Sign up'}
           </Button>
           <div className="form-link">
             Already have an account?{' '}

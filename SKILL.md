@@ -143,14 +143,39 @@ Never run migrations against a non-local DB without explicit user instruction.
 
 ## Recipe — query the DB
 
-Inside a Hono handler, use the `db` already on the request context. Outside, build one:
+Inside a Hono handler, use the `db` already on the request context:
+
+```ts
+import { and, eq } from 'drizzle-orm'
+import { widgets } from '../../db/schema'
+
+// Inside an authed Hono handler. `dbMiddleware` already opened `ctx.db`.
+const ctx = await requireRequestContext(c)
+if (ctx instanceof Response) return ctx
+const [widget] = await ctx.db
+  .select()
+  .from(widgets)
+  .where(and(eq(widgets.id, id), eq(widgets.ownerId, ctx.user.id)))
+```
+
+Outside a request, build a client and close it yourself:
 
 ```ts
 import { eq } from 'drizzle-orm'
-import { widgets } from '../../db/schema'
+import { createDbClient } from '../../db/client'
+import { profiles } from '../../db/schema'
 
-// Inside a Hono handler: `ctx.db` from requireRequestContext, or `c.var.db`.
-const [w] = await db.select().from(widgets).where(eq(widgets.id, id))
+// The caller opens and closes the connection.
+const { client, db } = createDbClient(env)
+await client.connect()
+try {
+  const [profile] = await db
+    .select()
+    .from(profiles)
+    .where(eq(profiles.id, userId))
+} finally {
+  await client.end()
+}
 ```
 
 ## Recipe — client data fetching

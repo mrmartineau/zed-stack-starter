@@ -27,8 +27,8 @@ drizzle/meta/_journal   ← generated, commit
 
 ## Commands
 
-| Command               | What it does                                                           |
-| --------------------- | ---------------------------------------------------------------------- |
+| Command                | What it does                                                           |
+| ---------------------- | ---------------------------------------------------------------------- |
 | `pnpm run db:generate` | Diff `schema.ts` vs last snapshot → emit a new SQL file in `drizzle/`. |
 | `pnpm run db:migrate`  | Apply unapplied SQL files to `DATABASE_URL`.                           |
 | `pnpm run db:studio`   | Open Drizzle Studio in the browser (table browser + ad-hoc queries).   |
@@ -153,8 +153,21 @@ app.get('/widgets', async (c) => {
 Outside of a request, build a client manually:
 
 ```ts
-import { createDb } from '../../db/client'
-const db = createDb(env)
+import { eq } from 'drizzle-orm'
+import { createDbClient } from '../../db/client'
+import { profiles } from '../../db/schema'
+
+// The caller opens and closes the connection.
+const { client, db } = createDbClient(env)
+await client.connect()
+try {
+  const [profile] = await db
+    .select()
+    .from(profiles)
+    .where(eq(profiles.id, userId))
+} finally {
+  await client.end()
+}
 ```
 
 For inserts / updates / deletes, follow Drizzle docs — `db.insert(widgets).values({...}).returning()`, `db.update(widgets).set({...}).where(...)`, etc.

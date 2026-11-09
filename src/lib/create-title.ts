@@ -6,7 +6,9 @@ import { CONTENT, TITLE_SEPARATOR } from '@/constants'
  */
 export const createTitle = (pageName?: string) => {
   if (!pageName) return CONTENT.appName
-  const pageTitle =
-    pageName in CONTENT ? CONTENT[pageName as keyof typeof CONTENT] : pageName
+  // Object.hasOwn, not `in`: `in` also matches inherited names like `toString`.
+  const pageTitle = Object.hasOwn(CONTENT, pageName)
+    ? CONTENT[pageName as keyof typeof CONTENT]
+    : pageName
   return `${pageTitle}${TITLE_SEPARATOR}${CONTENT.appName}`
 }

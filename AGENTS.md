@@ -6,7 +6,7 @@ Guide for AI coding agents working in this repo. Humans should read [`README.md`
 
 Follow the `coding-standards` skill (`~/code/mrmartineau/agent-skills/skills/coding-standards/`). Where this file and the skill disagree, this file wins: it describes how this repo already works. Do not rename existing files or classes to match the skill unless asked.
 
-All file names are kebab-case. Styling is ZUI classes and tokens.
+Hand-written files in `src/` and `db/` are kebab-case. Exceptions, named by their tools: TanStack Router files (`__root.tsx`, `route.tsx`, the `_authed/` and `_public/` layout folders) and generated files (`src/routeTree.gen.ts`, `drizzle/`). Styling is ZUI classes and tokens.
 
 ## Stack at a glance
 
@@ -125,11 +125,36 @@ Full guide: [`docs/DATABASE.md`](./docs/DATABASE.md). Cliff notes:
 ### Add a query
 
 ```ts
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { widgets } from '../../db/schema'
 
-// Inside a Hono handler: `ctx.db` from requireRequestContext, or `c.var.db`.
-const [widget] = await db.select().from(widgets).where(eq(widgets.id, id))
+// Inside an authed Hono handler. `dbMiddleware` already opened `ctx.db`.
+const ctx = await requireRequestContext(c)
+if (ctx instanceof Response) return ctx
+const [widget] = await ctx.db
+  .select()
+  .from(widgets)
+  .where(and(eq(widgets.id, id), eq(widgets.ownerId, ctx.user.id)))
+```
+
+Outside a request (a script, a cron handler), build a client and close it:
+
+```ts
+import { eq } from 'drizzle-orm'
+import { createDbClient } from '../../db/client'
+import { profiles } from '../../db/schema'
+
+// The caller opens and closes the connection.
+const { client, db } = createDbClient(env)
+await client.connect()
+try {
+  const [profile] = await db
+    .select()
+    .from(profiles)
+    .where(eq(profiles.id, userId))
+} finally {
+  await client.end()
+}
 ```
 
 Inside Hono, prefer the `db` already on the request context — don't create a second client.
@@ -165,8 +190,8 @@ For session/profile data, prefer the helpers in `src/lib/fetching/user.ts` — d
 
 ## Commands
 
-| Command               | When to run                                                         |
-| --------------------- | ------------------------------------------------------------------- |
+| Command                | When to run                                                         |
+| ---------------------- | ------------------------------------------------------------------- |
 | `pnpm install`         | After dependency change.                                            |
 | `pnpm run dev`         | Local dev server. Keeps router tree + Vite HMR alive.               |
 | `pnpm run build`       | Production build (Vite + tsc).                                      |

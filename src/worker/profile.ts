@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import type { Context } from 'hono'
 import { z } from 'zod'
 import { errorResponse } from '@/lib/fetching/error-response'
+import { isUniqueViolation } from '@/lib/postgres-errors'
 import { profiles } from '../../db/schema'
 import { getProfileById, requireRequestContext } from './context'
 import type { WorkerEnv } from './env'
@@ -49,10 +50,20 @@ export const updateCurrentProfile = async (context: HonoContext) => {
 
   const userId = requestContext.user.id
 
-  await requestContext.db
-    .update(profiles)
-    .set({ ...getProfileUpdate(parsed.data), updatedAt: new Date() })
-    .where(eq(profiles.id, userId))
+  try {
+    await requestContext.db
+      .update(profiles)
+      .set({ ...getProfileUpdate(parsed.data), updatedAt: new Date() })
+      .where(eq(profiles.id, userId))
+  } catch (error) {
+    // Only `username` is unique, so this is the one conflict a person can fix.
+    if (!isUniqueViolation(error)) throw error
+    return errorResponse({
+      error: 'That username is taken. Choose another one.',
+      reason: 'Duplicate username',
+      status: 409,
+    })
+  }
 
   const profile = await getProfileById(requestContext.db, userId)
 

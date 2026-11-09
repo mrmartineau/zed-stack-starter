@@ -14,4 +14,9 @@ describe('createTitle', () => {
   it('uses the text as it is when it is not a CONTENT key', () => {
     expect(createTitle('Zander')).toEqual('Zander — Z Stack Starter')
   })
+
+  it('treats inherited object names as plain text', () => {
+    expect(createTitle('toString')).toEqual('toString — Z Stack Starter')
+    expect(createTitle('__proto__')).toEqual('__proto__ — Z Stack Starter')
+  })
 })

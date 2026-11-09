@@ -68,16 +68,16 @@ QueryClientProvider
 
 ## File ownership
 
-| File                              | Purpose                                           |
-| --------------------------------- | ------------------------------------------------- |
-| `db/schema.ts`                    | Single source of truth for DB shape               |
-| `db/client.ts`                    | Drizzle factory — one `createDbClient(env)` per request |
-| `src/lib/auth/server.ts`          | better-auth config + Drizzle adapter wiring       |
-| `src/lib/auth/client.ts`          | React `authClient` for browser                    |
-| `src/worker/context.ts`           | Server-side request auth + DB factory             |
-| `src/worker/hono.ts`              | API route table                                   |
-| `src/components/AuthProvider.tsx` | Reactive session context                          |
-| `src/lib/fetching/user.ts`        | Session + profile React Query options + mutations |
+| File                               | Purpose                                                 |
+| ---------------------------------- | ------------------------------------------------------- |
+| `db/schema.ts`                     | Single source of truth for DB shape                     |
+| `db/client.ts`                     | Drizzle factory — one `createDbClient(env)` per request |
+| `src/lib/auth/server.ts`           | better-auth config + Drizzle adapter wiring             |
+| `src/lib/auth/client.ts`           | React `authClient` for browser                          |
+| `src/worker/context.ts`            | Server-side request auth + DB factory                   |
+| `src/worker/hono.ts`               | API route table                                         |
+| `src/components/auth-provider.tsx` | Reactive session context                                |
+| `src/lib/fetching/user.ts`         | Session + profile React Query options + mutations       |
 
 ## Adding a new authenticated endpoint
 

@@ -82,7 +82,7 @@ App runs at http://localhost:3450 (proxied as `[ras.localhost](http://ras.localh
 ```
 db/                     # Drizzle schema + client
 ├── schema.ts           # Auth tables + profiles
-└── client.ts           # neon-http drizzle client
+└── client.ts           # pg client + Drizzle (Hyperdrive or DATABASE_URL)
 drizzle/                # Generated migration SQL
 drizzle.config.ts       # Drizzle Kit config
 src/
@@ -93,8 +93,8 @@ src/
 │   │   └── client.ts   # better-auth React client
 │   ├── fetching/
 │   │   ├── user.ts     # session + profile queries
-│   │   └── errorResponse.ts
-│   ├── createTitle.ts
+│   │   └── error-response.ts
+│   ├── create-title.ts
 │   └── get-error-message.ts
 ├── routes/             # TanStack Router file-based
 │   ├── __root.tsx
@@ -106,11 +106,11 @@ src/
 │   ├── hono.ts         # routes
 │   ├── env.ts          # typed env bindings
 │   ├── context.ts      # request context (session + DB)
+│   ├── middleware/db.ts # opens one DB connection per request
 │   └── profile.ts      # /api/me endpoints
 ├── types/db.ts
 ├── constants.ts
 ├── main.tsx
-├── reportWebVitals.ts
 └── styles.css           # imports @mrmartineau/zui/css
 ```
 
@@ -282,14 +282,20 @@ Drizzle ORM with Neon HTTP driver — designed for Workers' edge runtime. Full g
 
 ```ts
 import { eq } from 'drizzle-orm'
-import { createDb } from '../../db/client'
+import { createDbClient } from '../../db/client'
 import { profiles } from '../../db/schema'
 
-const db = createDb(env)
-const [profile] = await db
-  .select()
-  .from(profiles)
-  .where(eq(profiles.id, userId))
+// The caller opens and closes the connection.
+const { client, db } = createDbClient(env)
+await client.connect()
+try {
+  const [profile] = await db
+    .select()
+    .from(profiles)
+    .where(eq(profiles.id, userId))
+} finally {
+  await client.end()
+}
 ```
 
 ### Switching databases
@@ -329,8 +335,8 @@ Authenticate first if needed: `pnpm exec wrangler login`.
 
 ## Scripts
 
-| Script                | What it does                            |
-| --------------------- | --------------------------------------- |
+| Script                 | What it does                            |
+| ---------------------- | --------------------------------------- |
 | `pnpm run dev`         | Start dev server on port 3450           |
 | `pnpm run build`       | Vite build + tsc                        |
 | `pnpm run preview`     | Preview production build                |

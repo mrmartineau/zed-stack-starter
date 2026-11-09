@@ -21,7 +21,13 @@ app.on(['GET', 'POST'], '/auth/*', (c) =>
 app.get('/me', getCurrentProfile)
 app.patch('/me', updateCurrentProfile)
 
-app.notFound((c) => c.text('Not found', 404))
+app.notFound((c) =>
+  errorResponse({
+    error: 'Not found',
+    reason: `No route for ${c.req.method} ${c.req.path}`,
+    status: 404,
+  }),
+)
 
 // Log the details here; never send stack traces or SQL to the browser.
 app.onError((error, c) => {

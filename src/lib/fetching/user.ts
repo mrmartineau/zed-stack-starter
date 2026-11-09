@@ -24,6 +24,16 @@ interface ProfileResponse {
   reason?: string
 }
 
+const readJsonBody = async (response: Response): Promise<ProfileResponse> => {
+  try {
+    return (await response.json()) as ProfileResponse
+  } catch {
+    // A proxy or crash page can send HTML. Its text must not reach the UI,
+    // so treat it as an empty body and use the fallback message.
+    return {}
+  }
+}
+
 /** Fetches the signed-in person's profile. Throws the server's message on failure. */
 export const getUserProfile = async ({
   signal,
@@ -31,10 +41,10 @@ export const getUserProfile = async ({
   signal?: AbortSignal
 } = {}) => {
   const response = await fetch(API_ME, { credentials: 'include', signal })
-  const body = (await response.json()) as ProfileResponse
+  const body = await readJsonBody(response)
 
   if (!response.ok || !body.data) {
-    throw new Error(body.error ?? body.reason ?? 'Could not load your profile')
+    throw new Error(body.error ?? 'Could not load your profile')
   }
 
   return { data: body.data }

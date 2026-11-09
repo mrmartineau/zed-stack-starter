@@ -19,7 +19,18 @@ function RouteComponent() {
 
   if (profile.status === 'pending') return <p>Loading…</p>
   if (profile.status === 'error') {
-    return <p role="alert">{profile.error.message}</p>
+    return (
+      <div role="alert">
+        <p>Could not load your profile.</p>
+        <button
+          type="button"
+          className="zui-button"
+          onClick={() => profile.refetch()}
+        >
+          Try again
+        </button>
+      </div>
+    )
   }
 
   return (

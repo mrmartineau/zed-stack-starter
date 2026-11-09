@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import type { AuthSession } from '@/lib/auth/client'
+import { createTitle } from '@/lib/create-title'
 
 interface MyRouterContext {
   session: AuthSession | null | undefined
@@ -36,4 +37,5 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       />
     </>
   ),
+  head: () => ({ meta: [{ title: createTitle() }] }),
 })

@@ -3,7 +3,7 @@
 How to add, modify, and work with database tables in this repo.
 
 - **ORM**: [Drizzle](https://orm.drizzle.team/)
-- **Driver**: `@neondatabase/serverless` (Postgres wire over HTTP — Workers-compatible)
+- **Driver**: `pg` (node-postgres), through Cloudflare Hyperdrive in the Worker
 - **Migration tool**: [drizzle-kit](https://orm.drizzle.team/docs/kit-overview)
 - **Single source of truth**: [`db/schema.ts`](../db/schema.ts)
 - **Generated SQL**: [`drizzle/`](../drizzle/) — committed, never hand-edited
@@ -186,13 +186,13 @@ For inserts / updates / deletes, follow Drizzle docs — `db.insert(widgets).val
 
 Neon: drop and recreate the branch (or use a new database) via the Neon console, point `DATABASE_URL` at it, `pnpm run db:migrate`. Don't try to "rollback" individual migrations — drizzle-kit's migrator is forward-only.
 
-## Switching off Neon
+## Switching Postgres providers
 
-`@neondatabase/serverless` is just a Postgres wire client over HTTP. To use plain Postgres (RDS, Supabase, local Docker, Hyperdrive):
+The driver is plain `pg`, so any Postgres works (Neon, Supabase, RDS, local Docker):
 
-1. Edit `db/client.ts` — swap to `drizzle-orm/node-postgres` + `pg.Pool`.
-2. Keep `nodejs_compat` in `wrangler.jsonc` (already on).
-3. For Hyperdrive: bind it in `wrangler.jsonc`, read `env.HYPERDRIVE.connectionString`.
+1. Create a Hyperdrive config for the new connection string: `pnpm exec wrangler hyperdrive create <name> --connection-string="postgresql://..."`.
+2. Put the returned `id` in the `hyperdrive` block of `wrangler.jsonc`.
+3. Set the same string as `DATABASE_URL` and `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` in `.env`.
 
 Schema and migrations don't change.
 

@@ -12,7 +12,7 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 | **Auth**                 | [better-auth](https://www.better-auth.com/)                                            |
 | **Database**             | Any Postgres (default: [Neon](https://neon.tech/))                                     |
 | **ORM**                  | [Drizzle ORM](https://orm.drizzle.team/)                                               |
-| **DB Driver**            | [@neondatabase/serverless](https://neon.tech/docs/serverless/serverless-driver) (HTTP) |
+| **DB Driver**            | [pg](https://node-postgres.com/) through [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/) |
 | **API Server**           | [Hono](https://hono.dev/)                                                              |
 | **Deployment**           | [Cloudflare Workers](https://workers.cloudflare.com/)                                  |
 | **UI Library**           | [ZUI](https://github.com/mrmartineau/zui) (CSS-first)                                  |
@@ -23,7 +23,7 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 
 ## Prerequisites
 
-- [Bun](https://bun.sh/) (recommended) or Node.js 20+
+- Node.js and [pnpm](https://pnpm.io/)
 - A Postgres database — [Neon](https://neon.tech/) recommended (free tier works)
 - A [Cloudflare](https://cloudflare.com/) account (for deployment)
 
@@ -37,10 +37,10 @@ pnpm install
 
 ### 2. Provision Postgres
 
-Sign up at [Neon](https://console.neon.tech/), create a project, and copy the **pooled** connection string. It looks like:
+Sign up at [Neon](https://console.neon.tech/), create a project, and copy the **direct** (not pooled) connection string. Hyperdrive does the pooling. It looks like:
 
 ```
-postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/DBNAME?sslmode=require
+postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/DBNAME?sslmode=require
 ```
 
 > Any Postgres works — Supabase, RDS, Railway, local Docker, etc. Just pass a valid connection string.
@@ -50,10 +50,13 @@ postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/DBNAME?sslmode=req
 Copy `.env.example` → `.env` and fill in:
 
 ```env
-DATABASE_URL=postgresql://...        # from step 2
-BETTER_AUTH_SECRET=                  # see below
+DATABASE_URL=postgresql://...                                              # drizzle-kit (migrations)
+CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://...  # the Worker in local dev
+BETTER_AUTH_SECRET=                                                        # see below
 BETTER_AUTH_URL=http://localhost:3450
 ```
+
+Use the same connection string for both database variables.
 
 Generate a secret:
 
@@ -268,7 +271,7 @@ Add new routes in `hono.ts`. Use `requireRequestContext(c)` inside handlers need
 
 ## Database
 
-Drizzle ORM with Neon HTTP driver — designed for Workers' edge runtime. Full guide in [`docs/DATABASE.md`](./docs/DATABASE.md): conventions, safe vs. destructive migrations, hand-editing SQL, switching providers, prod migrations.
+Drizzle ORM with the `pg` driver. In the Worker, `pg` connects through [Cloudflare Hyperdrive](https://developers.cloudflare.com/hyperdrive/), which pools connections near the database. `dbMiddleware` opens one connection per request and closes it after the response. Full guide in [`docs/DATABASE.md`](./docs/DATABASE.md): conventions, safe vs. destructive migrations, hand-editing SQL, switching providers, prod migrations.
 
 ### Editing schema
 
@@ -304,17 +307,24 @@ export const getProfile = async (env: DbEnv, userId: string) => {
 
 ### Switching databases
 
-The `@neondatabase/serverless` driver speaks Postgres wire protocol over HTTP. To switch off Neon:
+The driver is plain `pg`, so any Postgres works (Neon, Supabase, RDS, local Docker). Create a Hyperdrive config for the new connection string, put its `id` in `wrangler.jsonc`, and set the same string as `DATABASE_URL` and `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` in `.env`.
 
-- **Self-hosted / RDS / Supabase**: swap `db/client.ts` to `drizzle-orm/node-postgres` + `pg.Pool` (requires `nodejs_compat` flag — already set in `wrangler.jsonc`).
-- **Cloudflare Hyperdrive**: bind a Hyperdrive in `wrangler.jsonc`, read its `connectionString`.
+To run without Hyperdrive, remove the `hyperdrive` block from `wrangler.jsonc` and set a `DATABASE_URL` secret. It works, but each request then pays the full connection setup.
 
 ## Deployment
+
+### Create the Hyperdrive config
+
+```bash
+pnpm exec wrangler hyperdrive create zed-stack-starter-db \
+  --connection-string="postgresql://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require"
+```
+
+Put the returned `id` in the `hyperdrive` block of `wrangler.jsonc`. The Worker reads the database through this binding, so it needs no `DATABASE_URL` secret.
 
 ### Set secrets
 
 ```bash
-pnpm exec wrangler secret put DATABASE_URL
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 ```
 
@@ -368,7 +378,8 @@ Components are plain elements with `zui-*` classes (`zui-button`, `zui-card`, `z
 
 | Env var                       | Purpose                                        |
 | ----------------------------- | ---------------------------------------------- |
-| `DATABASE_URL`                | Postgres connection string                     |
+| `DATABASE_URL`                | Postgres connection string for drizzle-kit; the Worker's fallback when no Hyperdrive is bound |
+| `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` | Connection string the `HYPERDRIVE` binding uses in local dev |
 | `BETTER_AUTH_SECRET`          | 32+ char random hex; signs sessions            |
 | `BETTER_AUTH_URL`             | Public origin (cookies + redirect URLs)        |
 | `BETTER_AUTH_TRUSTED_ORIGINS` | Comma-separated. Defaults to `BETTER_AUTH_URL` |

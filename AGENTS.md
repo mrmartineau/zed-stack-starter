@@ -2,6 +2,12 @@
 
 Guide for AI coding agents working in this repo. Humans should read [`README.md`](./README.md) first — this file assumes that context and focuses on the conventions an agent needs to make correct edits without breaking things.
 
+## Coding standards
+
+Follow the `coding-standards` skill (`~/code/mrmartineau/agent-skills/skills/coding-standards/`). Where this file and the skill disagree, this file wins: it describes how this repo already works. Do not rename existing files or classes to match the skill unless asked.
+
+Known differences from the skill: component files mix PascalCase (`AuthProvider.tsx`) and kebab-case (`login-form.tsx`); new files use kebab-case. Styling is ZUI classes and tokens.
+
 ## Stack at a glance
 
 - **Runtime**: Cloudflare Workers (edge). `nodejs_compat` flag is on.

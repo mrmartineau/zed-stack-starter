@@ -20,8 +20,9 @@ function RouteComponent() {
   if (profile.status === 'pending') return <p>Loading…</p>
   if (profile.status === 'error') {
     return (
-      <div role="alert">
-        <p>Could not load your profile.</p>
+      <div>
+        {/* role="alert" on the text only: a live region must not hold controls. */}
+        <p role="alert">Could not load your profile.</p>
         <button
           type="button"
           className="zui-button"

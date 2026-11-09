@@ -162,19 +162,22 @@ Outside a request, build a client and close it yourself:
 
 ```ts
 import { eq } from 'drizzle-orm'
-import { createDbClient } from '../../db/client'
+import { createDbClient, type DbEnv } from '../../db/client'
 import { profiles } from '../../db/schema'
 
 // The caller opens and closes the connection.
-const { client, db } = createDbClient(env)
-await client.connect()
-try {
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, userId))
-} finally {
-  await client.end()
+export const getProfile = async (env: DbEnv, userId: string) => {
+  const { client, db } = createDbClient(env)
+  await client.connect()
+  try {
+    const [profile] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.id, userId))
+    return profile ?? null
+  } finally {
+    await client.end()
+  }
 }
 ```
 

@@ -47,8 +47,8 @@ const App = () => {
 }
 
 const AppError = () => (
-  <div role="alert">
-    <p>Something went wrong.</p>
+  <div>
+    <p role="alert">Something went wrong.</p>
     <button
       type="button"
       className="zui-button"

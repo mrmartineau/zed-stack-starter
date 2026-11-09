@@ -14,7 +14,7 @@ pnpm install
 
 1. Go to https://console.neon.tech/ and sign in
 2. Create a new project (any region — pick one close to your Cloudflare deploy)
-3. After creation, find **Connection string** and turn **Connection pooling** off. Hyperdrive does the pooling.
+3. After creation, find **Connection string** and turn **Connection pooling** off. In production, Hyperdrive does the pooling. Local dev has no pooling and opens one connection per request.
 4. Copy the string. Format:
 
    ```

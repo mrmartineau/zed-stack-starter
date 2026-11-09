@@ -37,7 +37,7 @@ pnpm install
 
 ### 2. Provision Postgres
 
-Sign up at [Neon](https://console.neon.tech/), create a project, and copy the **direct** (not pooled) connection string. Hyperdrive does the pooling. It looks like:
+Sign up at [Neon](https://console.neon.tech/), create a project, and copy the **direct** (not pooled) connection string. In production, Hyperdrive does the pooling. Local dev has no pooling and opens one connection per request. It looks like:
 
 ```
 postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/DBNAME?sslmode=require

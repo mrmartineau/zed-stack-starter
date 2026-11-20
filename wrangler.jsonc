@@ -12,10 +12,10 @@
    * https://developers.cloudflare.com/workers/runtime-apis/bindings/
    */
   "ai": {
-    "binding": "AI"
+    "binding": "AI",
   },
   "assets": {
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
   },
   "compatibility_date": "2026-03-12",
   "compatibility_flags": ["nodejs_compat"],
@@ -28,13 +28,13 @@
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
-      "id": "61cb2d007c58420cad7f37a907240d32"
-    }
+      "id": "61cb2d007c58420cad7f37a907240d32",
+    },
   ],
   "main": "src/worker/index.ts",
   "name": "zed-stack-starter",
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
 
   /**
@@ -56,13 +56,13 @@
     {
       "name": "AUTH_RATE_LIMITER",
       "namespace_id": "1001",
-      "simple": { "limit": 10, "period": 60 }
-    }
+      "simple": { "limit": 10, "period": 60 },
+    },
   ],
   "vars": {
     /** Public base URL for better-auth. Set per-environment. */
-    "BETTER_AUTH_URL": "http://localhost:3450"
-  }
+    "BETTER_AUTH_URL": "http://localhost:3450",
+  },
   /**
    * Environment Variables
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables

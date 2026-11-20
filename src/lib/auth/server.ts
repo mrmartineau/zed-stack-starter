@@ -31,8 +31,7 @@ const getTrustedOrigins = (env: AuthEnv) => {
   return env.BETTER_AUTH_URL ? [env.BETTER_AUTH_URL] : undefined
 }
 
-const isSignUpDisabled = (env: AuthEnv) =>
-  env.BETTER_AUTH_DISABLE_SIGNUP === 'true'
+const isSignUpDisabled = (env: AuthEnv) => env.BETTER_AUTH_DISABLE_SIGNUP === 'true'
 
 /** A better-auth instance for one request. Also creates a profile row for each new user. */
 export const createAuth = (env: AuthEnv, db: Db) => {

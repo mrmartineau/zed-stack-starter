@@ -106,11 +106,7 @@ export function SignUpForm() {
               {status.message}
             </p>
           )}
-          <Button
-            type="submit"
-            disabled={status.kind === 'saving'}
-            style={{ width: '100%' }}
-          >
+          <Button type="submit" disabled={status.kind === 'saving'} style={{ width: '100%' }}>
             {status.kind === 'saving' ? 'Creating an account...' : 'Sign up'}
           </Button>
           <div className="form-link">

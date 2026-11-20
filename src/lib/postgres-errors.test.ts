@@ -12,9 +12,7 @@ describe('isUniqueViolation', () => {
   })
 
   it('is false for other Postgres errors', () => {
-    expect(
-      isUniqueViolation(new Error('x', { cause: { code: '23503' } })),
-    ).toBe(false)
+    expect(isUniqueViolation(new Error('x', { cause: { code: '23503' } }))).toBe(false)
   })
 
   it('is false for values that are not objects', () => {

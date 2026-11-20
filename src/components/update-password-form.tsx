@@ -53,10 +53,7 @@ export function UpdatePasswordForm() {
         <CardDescription>Please enter your new password below.</CardDescription>
       </CardHeader>
       <CardBody>
-        <form
-          onSubmit={handleUpdatePassword}
-          className="flex flex-column gap-md"
-        >
+        <form onSubmit={handleUpdatePassword} className="flex flex-column gap-md">
           <div className="flex flex-column gap-2xs">
             <Label htmlFor="password">New password</Label>
             <Input
@@ -74,11 +71,7 @@ export function UpdatePasswordForm() {
               {status.message}
             </p>
           )}
-          <Button
-            type="submit"
-            disabled={status.kind === 'saving'}
-            style={{ width: '100%' }}
-          >
+          <Button type="submit" disabled={status.kind === 'saving'} style={{ width: '100%' }}>
             {status.kind === 'saving' ? 'Saving...' : 'Save new password'}
           </Button>
         </form>

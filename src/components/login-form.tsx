@@ -10,11 +10,7 @@ import {
 } from '@mrmartineau/zui/react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
-import {
-  ROUTE_APP_HOME,
-  ROUTE_FORGOT_PASSWORD,
-  ROUTE_SIGNUP,
-} from '@/constants'
+import { ROUTE_APP_HOME, ROUTE_FORGOT_PASSWORD, ROUTE_SIGNUP } from '@/constants'
 import { authClient } from '@/lib/auth/client'
 import type { FormStatus } from '@/lib/form-status'
 
@@ -46,9 +42,7 @@ export function LoginForm() {
     <Card>
       <CardHeader>
         <CardTitle>Login</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
+        <CardDescription>Enter your email below to login to your account</CardDescription>
       </CardHeader>
       <CardBody>
         <form onSubmit={handleLogin} className="flex flex-column gap-md">
@@ -85,11 +79,7 @@ export function LoginForm() {
               {status.message}
             </p>
           )}
-          <Button
-            type="submit"
-            disabled={status.kind === 'saving'}
-            style={{ width: '100%' }}
-          >
+          <Button type="submit" disabled={status.kind === 'saving'} style={{ width: '100%' }}>
             {status.kind === 'saving' ? 'Logging in...' : 'Login'}
           </Button>
           <div className="form-link">

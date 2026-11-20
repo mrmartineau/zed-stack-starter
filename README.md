@@ -18,7 +18,7 @@ Modern full-stack React starter. Postgres + better-auth + Drizzle ORM, deployed 
 | **UI Library**           | [ZUI](https://github.com/mrmartineau/zui) (CSS-first)                                                           |
 | **Icons**                | [Phosphor Icons](https://phosphoricons.com/)                                                                    |
 | **Validation**           | [Zod](https://zod.dev/)                                                                                         |
-| **Linting & Formatting** | [Biome](https://biomejs.dev/)                                                                                   |
+| **Linting & Formatting** | [oxlint](https://oxc.rs/docs/guide/usage/linter) + [oxfmt](https://oxc.rs/docs/guide/usage/formatter)                                                                                   |
 | **Testing**              | [Vitest](https://vitest.dev/)                                                                                   |
 
 ## Prerequisites
@@ -366,8 +366,8 @@ Authenticate first if needed: `pnpm exec wrangler login`.
 | `pnpm run test`        | Run Vitest                              |
 | `pnpm run type-check`  | TypeScript check                        |
 | `pnpm run cf-typegen`  | Regenerate `worker-configuration.d.ts`  |
-| `pnpm run check`       | Biome check + autofix                   |
-| `pnpm run format`      | Biome format                            |
+| `pnpm run check`       | oxlint + oxfmt, with autofix                   |
+| `pnpm run format`      | oxfmt                                   |
 
 ## Styling
 

@@ -13,17 +13,13 @@ import {
 export const authUsers = pgTable(
   'user',
   {
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     email: text('email').notNull(),
     emailVerified: boolean('email_verified').notNull().default(false),
     id: uuid('id').primaryKey().defaultRandom(),
     image: text('image'),
     name: text('name').notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex('user_email_key').on(table.email)],
 )
@@ -31,16 +27,14 @@ export const authUsers = pgTable(
 export const authSessions = pgTable(
   'session',
   {
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-    id: text('id').primaryKey().default(sql`gen_random_uuid()::text`),
+    id: text('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()::text`),
     ipAddress: text('ip_address'),
     token: text('token').notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     userAgent: text('user_agent'),
     userId: uuid('user_id')
       .notNull()
@@ -60,10 +54,10 @@ export const authAccounts = pgTable(
       withTimezone: true,
     }),
     accountId: text('account_id').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    id: text('id').primaryKey().default(sql`gen_random_uuid()::text`),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    id: text('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()::text`),
     idToken: text('id_token'),
     password: text('password'),
     providerId: text('provider_id').notNull(),
@@ -72,9 +66,7 @@ export const authAccounts = pgTable(
       withTimezone: true,
     }),
     scope: text('scope'),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     userId: uuid('user_id')
       .notNull()
       .references(() => authUsers.id, { onDelete: 'cascade' }),
@@ -85,18 +77,20 @@ export const authAccounts = pgTable(
 export const authVerifications = pgTable('verification', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  id: text('id').primaryKey().default(sql`gen_random_uuid()::text`),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()::text`),
   identifier: text('identifier').notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   value: text('value').notNull(),
 })
 
 export const authJwks = pgTable('jwks', {
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp('expires_at', { withTimezone: true }),
-  id: text('id').primaryKey().default(sql`gen_random_uuid()::text`),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()::text`),
   privateKey: text('private_key').notNull(),
   publicKey: text('public_key').notNull(),
 })

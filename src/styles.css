@@ -1,8 +1,8 @@
-@import "@mrmartineau/zui/css";
-@import "@fontsource-variable/inter";
+@import '@mrmartineau/zui/css';
+@import '@fontsource-variable/inter';
 
 :root {
-  --font-sans: "Inter Variable", sans-serif;
+  --font-sans: 'Inter Variable', sans-serif;
 }
 
 body {

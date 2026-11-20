@@ -14,11 +14,7 @@ const SessionContext = createContext<SessionContextValue>({
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const session = useSession()
 
-  return (
-    <SessionContext.Provider value={{ session }}>
-      {children}
-    </SessionContext.Provider>
-  )
+  return <SessionContext.Provider value={{ session }}>{children}</SessionContext.Provider>
 }
 
 /** Reads the session from `AuthProvider`. */

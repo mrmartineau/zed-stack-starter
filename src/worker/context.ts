@@ -26,8 +26,7 @@ export interface AuthedRequestContext extends RequestContext {
 
 type Profile = typeof profiles.$inferSelect
 
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 /** Maps a `profiles` row to the snake_case shape the API sends. */
 export const profileToRow = (profile: Profile) => ({
@@ -49,22 +48,14 @@ const getBearerToken = (request: Context['req']) => {
 
 /** The profile for a user ID, or `null`. */
 export const getProfileById = async (db: Db, userId: string) => {
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, userId))
-    .limit(1)
+  const [profile] = await db.select().from(profiles).where(eq(profiles.id, userId)).limit(1)
   return profile ? profileToRow(profile) : null
 }
 
 /** The profile that owns an API key, or `null`. Rejects keys that are not UUIDs before the query. */
 export const getProfileByApiKey = async (db: Db, apiKey: string) => {
   if (!uuidPattern.test(apiKey)) return null
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.apiKey, apiKey))
-    .limit(1)
+  const [profile] = await db.select().from(profiles).where(eq(profiles.apiKey, apiKey)).limit(1)
   return profile ? profileToRow(profile) : null
 }
 

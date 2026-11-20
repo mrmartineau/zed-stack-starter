@@ -50,8 +50,8 @@ export function ForgotPasswordForm() {
         </CardHeader>
         <CardBody>
           <p>
-            If you registered using your email and password, you will receive a
-            password reset email.
+            If you registered using your email and password, you will receive a password reset
+            email.
           </p>
         </CardBody>
       </Card>
@@ -63,15 +63,11 @@ export function ForgotPasswordForm() {
       <CardHeader>
         <CardTitle>Reset Your Password</CardTitle>
         <CardDescription>
-          Type in your email and we&apos;ll send you a link to reset your
-          password
+          Type in your email and we&apos;ll send you a link to reset your password
         </CardDescription>
       </CardHeader>
       <CardBody>
-        <form
-          onSubmit={handleForgotPassword}
-          className="flex flex-column gap-md"
-        >
+        <form onSubmit={handleForgotPassword} className="flex flex-column gap-md">
           <div className="flex flex-column gap-2xs">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -89,11 +85,7 @@ export function ForgotPasswordForm() {
               {status.message}
             </p>
           )}
-          <Button
-            type="submit"
-            disabled={status.kind === 'saving'}
-            style={{ width: '100%' }}
-          >
+          <Button type="submit" disabled={status.kind === 'saving'} style={{ width: '100%' }}>
             {status.kind === 'saving' ? 'Sending...' : 'Send reset email'}
           </Button>
           <div className="form-link">

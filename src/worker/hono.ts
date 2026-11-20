@@ -26,9 +26,7 @@ app.use('/auth/*', authRateLimit)
 
 app.use('*', dbMiddleware)
 
-app.on(['GET', 'POST'], '/auth/*', (c) =>
-  createAuth(c.env, c.var.db).handler(c.req.raw),
-)
+app.on(['GET', 'POST'], '/auth/*', (c) => createAuth(c.env, c.var.db).handler(c.req.raw))
 
 app.get('/me', getCurrentProfile)
 app.patch('/me', updateCurrentProfile)

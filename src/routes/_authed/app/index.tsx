@@ -23,11 +23,7 @@ function RouteComponent() {
       <div>
         {/* role="alert" on the text only: a live region must not hold controls. */}
         <p role="alert">Could not load your profile.</p>
-        <button
-          type="button"
-          className="zui-button"
-          onClick={() => profile.refetch()}
-        >
+        <button type="button" className="zui-button" onClick={() => profile.refetch()}>
           Try again
         </button>
       </div>

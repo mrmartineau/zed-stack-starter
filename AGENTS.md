@@ -16,7 +16,7 @@ Hand-written files in `src/` and `db/` are kebab-case. Exceptions, named by thei
 - **DB**: Postgres via [Drizzle ORM](https://orm.drizzle.team/) + `pg`, through Cloudflare Hyperdrive (falls back to `DATABASE_URL`). Schema in `db/schema.ts`.
 - **Auth**: [better-auth](https://www.better-auth.com/) (email/password). Server config in `src/lib/auth/server.ts`, React client in `src/lib/auth/client.ts`.
 - **UI**: [ZUI](https://github.com/mrmartineau/zui) — class-based, no JS wrappers.
-- **Build/lint/test**: Vite, Biome, Vitest.
+- **Build/lint/test**: Vite, oxlint, oxfmt, Vitest.
 
 ## Where things live
 
@@ -200,7 +200,7 @@ For session/profile data, prefer the helpers in `src/lib/fetching/user.ts` — d
 | `pnpm run dev`         | Local dev server. Keeps router tree + Vite HMR alive.               |
 | `pnpm run build`       | Production build (Vite + tsc).                                      |
 | `pnpm run type-check`  | Fast TS-only check. Run before declaring a task done.               |
-| `pnpm run check`       | Biome lint + format with autofix. Run before committing.            |
+| `pnpm run check`       | oxlint + oxfmt with autofix. Run before committing.            |
 | `pnpm run test`        | Vitest.                                                             |
 | `pnpm run db:generate` | After editing `db/schema.ts`.                                       |
 | `pnpm run db:migrate`  | Apply pending SQL to `DATABASE_URL`.                                |
@@ -212,7 +212,7 @@ For session/profile data, prefer the helpers in `src/lib/fetching/user.ts` — d
 
 Before declaring a task done:
 
-1. `pnpm run check` — Biome happy.
+1. `pnpm run check` — oxlint and oxfmt happy.
 2. `pnpm run type-check` — TS happy.
 3. `pnpm run test` — if you touched anything covered by a test or wrote one.
 4. If you edited `db/schema.ts`: matching SQL file committed in `drizzle/`.

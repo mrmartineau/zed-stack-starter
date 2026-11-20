@@ -39,7 +39,7 @@ drizzle/meta/_journal   ← generated, commit
 
 Look at `db/schema.ts` before adding anything; copy the patterns already there.
 
-- **Field order in `pgTable`**: alphabetical inside the column object. Biome won't enforce this — keep it consistent by hand.
+- **Field order in `pgTable`**: alphabetical inside the column object. The linter won't enforce this — keep it consistent by hand.
 - **Naming**: TS field is camelCase; DB column is snake_case (`createdAt` → `"created_at"`). Always pass an explicit column name as the first arg to the column helper.
 - **Primary keys**:
   - User-owned tables joining to `authUsers`: `uuid("id")` with `defaultRandom()`.

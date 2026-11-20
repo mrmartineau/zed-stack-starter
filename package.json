@@ -1,4 +1,21 @@
 {
+  "name": "zed-stack-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && tsc",
+    "cf-typegen": "wrangler types",
+    "check": "oxlint --fix && oxfmt",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "deploy": "pnpm run build && wrangler deploy",
+    "dev": "portless ras vite",
+    "format": "oxfmt",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
     "@mrmartineau/zui": "^1.8.0",
@@ -21,9 +38,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.4",
     "@cloudflare/vite-plugin": "^1.67.0",
     "@cloudflare/workers-types": "^5.20261104.1",
+    "@mrmartineau/kit": "^1.1.0",
     "@tanstack/devtools-vite": "^0.8.6",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
@@ -35,6 +52,8 @@
     "@vitejs/plugin-react": "^6.2.1",
     "drizzle-kit": "^0.31.11",
     "jsdom": "^30.1.3",
+    "oxfmt": "^0.79.0",
+    "oxlint": "^1.94.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.1.0",
@@ -43,22 +62,5 @@
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
-  "name": "zed-stack-starter",
-  "packageManager": "pnpm@11.1.1",
-  "private": true,
-  "scripts": {
-    "build": "vite build && tsc",
-    "cf-typegen": "wrangler types",
-    "check": "biome check --write .",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "deploy": "pnpm run build && wrangler deploy",
-    "dev": "portless ras vite",
-    "format": "biome format --write .",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "type-check": "tsc --noEmit"
-  },
-  "type": "module"
+  "packageManager": "pnpm@11.1.1"
 }

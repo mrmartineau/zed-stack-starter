@@ -49,11 +49,7 @@ const App = () => {
 const AppError = () => (
   <div>
     <p role="alert">Something went wrong.</p>
-    <button
-      type="button"
-      className="zui-button"
-      onClick={() => window.location.reload()}
-    >
+    <button type="button" className="zui-button" onClick={() => window.location.reload()}>
       Reload
     </button>
   </div>

@@ -10,7 +10,7 @@ Skill for extending this repo. Pair with [`AGENTS.md`](./AGENTS.md) for full con
 
 ## Stack snapshot
 
-React 19 + TanStack Router (file-based) + TanStack Query + Hono on Cloudflare Workers + Drizzle + Postgres (`pg` via Hyperdrive) + better-auth + ZUI. pnpm. Biome. Vitest.
+React 19 + TanStack Router (file-based) + TanStack Query + Hono on Cloudflare Workers + Drizzle + Postgres (`pg` via Hyperdrive) + better-auth + ZUI. pnpm. oxlint + oxfmt. Vitest.
 
 ## Hard rules (do not violate)
 
@@ -206,7 +206,7 @@ For session/profile, use helpers in `src/lib/fetching/user.ts` — don't duplica
 
 ## Pre-handoff checklist
 
-1. `pnpm run check` (Biome).
+1. `pnpm run check` (oxlint + oxfmt).
 2. `pnpm run type-check` (tsc).
 3. `pnpm run test` if anything tested was touched.
 4. New route → `ROUTE_*` constant added if linked from JSX.
